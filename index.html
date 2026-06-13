@@ -1,1393 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PPL Flash Cards — FAA Airplane Flying Handbook</title>
-<style>
-  :root {
-    --bg-1: #0b1220;
-    --bg-2: #131c2f;
-    --panel: #1b2540;
-    --panel-2: #243153;
-    --ink: #e7ecf5;
-    --ink-dim: #9aa6c0;
-    --accent: #5aa9ff;
-    --accent-2: #7bd88f;
-    --warn: #ffb454;
-    --bad:  #ff6b6b;
-    --good: #7bd88f;
-    --shadow: 0 12px 30px rgba(0,0,0,.35);
-    --radius: 14px;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink);
-    background:
-      radial-gradient(1200px 600px at 80% -10%, #2a3a66 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, #1e3556 0%, transparent 60%),
-      linear-gradient(180deg, var(--bg-1), var(--bg-2));
-    min-height: 100vh;
-  }
-  header {
-    padding: 22px 24px 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  h1 {
-    margin: 0;
-    font-size: 22px;
-    letter-spacing: .3px;
-  }
-  h1 .sub {
-    color: var(--ink-dim);
-    font-weight: 400;
-    font-size: 13px;
-    margin-left: 8px;
-  }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--panel);
-    border: 1px solid #2d3a5e;
-    color: var(--ink-dim);
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-  }
-  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 14px 20px 80px;
-  }
-  .toolbar {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr auto auto;
-    gap: 10px;
-    margin: 16px 0 16px;
-  }
-  @media (max-width: 760px) {
-    .toolbar { grid-template-columns: 1fr 1fr; }
-  }
-  .toolbar input, .toolbar select, .toolbar button {
-    background: var(--panel);
-    color: var(--ink);
-    border: 1px solid #2d3a5e;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font: inherit;
-    outline: none;
-    transition: border-color .15s, background .15s, transform .05s;
-  }
-  .toolbar input:focus, .toolbar select:focus { border-color: var(--accent); }
-  .toolbar button { cursor: pointer; }
-  .toolbar button:hover { background: var(--panel-2); }
-  .toolbar button:active { transform: translateY(1px); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard portal for Chris Nelson's web applications and interactive tools, including flight flashcards, culinary calculators, and recital registration.">
+  <title>Chris Nelson — Project Dashboard</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  .mode-tabs {
-    display: inline-flex;
-    background: var(--panel);
-    border: 1px solid #2d3a5e;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .mode-tabs button {
-    background: transparent;
-    border: 0;
-    color: var(--ink-dim);
-    padding: 9px 14px;
-    cursor: pointer;
-    font: inherit;
-  }
-  .mode-tabs button.active {
-    background: var(--accent);
-    color: #0b1220;
-    font-weight: 600;
-  }
+  <style>
+    /* ============================================================
+       DESIGN SYSTEM & CSS VARIABLES
+       ============================================================ */
+    :root {
+      --bg: #070b14;
+      --panel: rgba(255, 255, 255, 0.03);
+      --panel-hover: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.18);
+      
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      /* App-specific Accent Colors */
+      --color-aviation: #3b82f6;
+      --color-aviation-glow: rgba(59, 130, 246, 0.15);
+      
+      --color-culinary: #f97316;
+      --color-culinary-glow: rgba(249, 115, 22, 0.15);
+      
+      --color-music: #ef4444;
+      --color-music-glow: rgba(239, 68, 68, 0.15);
+      
+      --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .stats-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .stat {
-    background: var(--panel);
-    border: 1px solid #2d3a5e;
-    border-radius: 10px;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--ink-dim);
-  }
-  .stat b { color: var(--ink); }
+    /* ============================================================
+       GLOBAL STYLES & RESET
+       ============================================================ */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* Card */
-  .card-shell {
-    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-    border: 1px solid #2d3a5e;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 28px 28px 22px;
-    min-height: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: relative;
-  }
-  .card-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--ink-dim);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .card-meta .chip {
-    background: rgba(90,169,255,.15);
-    color: var(--accent);
-    border: 1px solid rgba(90,169,255,.35);
-    padding: 3px 10px;
-    border-radius: 999px;
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 11px;
-  }
-  .card-q {
-    font-size: 22px;
-    line-height: 1.35;
-    font-weight: 500;
-  }
-  .card-a {
-    font-size: 16px;
-    color: #d6deef;
-    background: rgba(0,0,0,.18);
-    border-left: 3px solid var(--accent-2);
-    padding: 12px 14px;
-    border-radius: 8px;
-    white-space: pre-wrap;
-  }
-  .card-a.hidden { display: none; }
-  .card-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: auto;
-  }
-  .btn {
-    border: 1px solid #2d3a5e;
-    background: var(--panel);
-    color: var(--ink);
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font: inherit;
-    font-weight: 500;
-    transition: background .15s, border-color .15s, transform .05s;
-  }
-  .btn:hover { background: var(--panel-2); }
-  .btn.primary { background: var(--accent); color: #0b1220; border-color: transparent; }
-  .btn.primary:hover { filter: brightness(1.05); }
-  .btn.again { background: rgba(255,107,107,.15); border-color: rgba(255,107,107,.45); color: #ffd0d0; }
-  .btn.hard  { background: rgba(255,180,84,.15); border-color: rgba(255,180,84,.45); color: #ffe2b8; }
-  .btn.good  { background: rgba(123,216,143,.15); border-color: rgba(123,216,143,.45); color: #d6f3df; }
-  .btn.easy  { background: rgba(90,169,255,.15); border-color: rgba(90,169,255,.45); color: #c9defc; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 10%, rgba(239, 68, 68, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 90%, rgba(249, 115, 22, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
 
-  .nav-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    color: var(--ink-dim);
-    font-size: 13px;
-  }
-  .nav-row button {
-    background: transparent;
-    border: 0;
-    color: var(--ink-dim);
-    cursor: pointer;
-    padding: 6px 10px;
-  }
-  .nav-row button:hover { color: var(--ink); }
+    /* ============================================================
+       LAYOUT & CONTAINERS
+       ============================================================ */
+    main {
+      width: 100%;
+      max-width: 1200px;
+      margin: auto 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3.5rem;
+      z-index: 10;
+    }
 
-  /* Quiz */
-  .quiz-shell .options {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .quiz-option {
-    text-align: left;
-    background: var(--panel);
-    border: 1px solid #2d3a5e;
-    color: var(--ink);
-    padding: 12px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font: inherit;
-    transition: background .15s, border-color .15s, transform .05s;
-  }
-  .quiz-option:hover { background: var(--panel-2); }
-  .quiz-option.correct { background: rgba(123,216,143,.18); border-color: var(--good); }
-  .quiz-option.wrong   { background: rgba(255,107,107,.18); border-color: var(--bad); }
-  .quiz-option:disabled { cursor: default; }
+    /* ============================================================
+       HERO / HEADER SECTION
+       ============================================================ */
+    .hero-section {
+      text-align: center;
+      max-width: 700px;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-  .quiz-score {
-    font-size: 14px;
-    color: var(--ink-dim);
-  }
-  .quiz-score b.correct { color: var(--good); }
-  .quiz-score b.wrong   { color: var(--bad); }
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 40%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-  /* Progress bar */
-  .progress {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,.06);
-    border-radius: 999px;
-    overflow: hidden;
-    margin: 6px 0 0;
-  }
-  .progress .bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    width: 0%;
-    transition: width .25s;
-  }
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.6;
+    }
 
-  /* Footer */
-  footer {
-    color: var(--ink-dim);
-    font-size: 12px;
-    text-align: center;
-    margin-top: 24px;
-  }
-  footer a { color: var(--accent); text-decoration: none; }
+    /* ============================================================
+       PROJECT CARDS GRID
+       ============================================================ */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      padding: 1rem 0;
+      animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+      opacity: 0;
+    }
 
-  /* Empty / done */
-  .empty {
-    background: var(--panel);
-    border: 1px dashed #34416a;
-    color: var(--ink-dim);
-    padding: 30px;
-    border-radius: var(--radius);
-    text-align: center;
-  }
+    /* Card Item */
+    .project-card {
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.75rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: var(--transition-base);
+      cursor: pointer;
+      overflow: hidden;
+    }
 
-  /* Mastery legend on card */
-  .mastery {
-    color: var(--ink-dim);
-    font-size: 11px;
-  }
-  .mastery .new   { color: var(--ink-dim); }
-  .mastery .learn { color: var(--warn); }
-  .mastery .review{ color: var(--accent); }
-  .mastery .mastered { color: var(--good); }
+    /* Card Glow Effect */
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(800px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.04), transparent 40%);
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
 
-  kbd {
-    background: #0b1220;
-    border: 1px solid #2d3a5e;
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 11px;
-    color: var(--ink-dim);
-  }
+    .project-card:hover::before {
+      opacity: 1;
+    }
 
-  details.help {
-    margin-top: 12px;
-    background: var(--panel);
-    border: 1px solid #2d3a5e;
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--ink-dim);
-    font-size: 13px;
-  }
-  details.help summary { cursor: pointer; color: var(--ink); }
-  details.help p { margin: 8px 0; }
-</style>
+    .project-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-hover);
+    }
+
+    /* Accent Glows & Shadow Overrides */
+    .project-card.aviation-card:hover {
+      box-shadow: 0 20px 40px -15px var(--color-aviation-glow);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    .project-card.culinary-card:hover {
+      box-shadow: 0 20px 40px -15px var(--color-culinary-glow);
+      border-color: rgba(249, 115, 22, 0.3);
+    }
+    .project-card.music-card:hover {
+      box-shadow: 0 20px 40px -15px var(--color-music-glow);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Top Content Block */
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Header with Icon and Badge */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .icon-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      transition: var(--transition-base);
+    }
+
+    .project-card:hover .icon-container {
+      background: rgba(255, 255, 255, 0.05);
+      transform: scale(1.05);
+    }
+
+    /* Icon SVGs */
+    .icon-svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: var(--transition-base);
+    }
+
+    .aviation-card .icon-svg { stroke: var(--color-aviation); }
+    .culinary-card .icon-svg { stroke: var(--color-culinary); }
+    .music-card .icon-svg { stroke: var(--color-music); }
+
+    /* Badge */
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.75rem;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .aviation-card .badge { color: var(--color-aviation); border-color: rgba(59, 130, 246, 0.15); }
+    .culinary-card .badge { color: var(--color-culinary); border-color: rgba(249, 115, 22, 0.15); }
+    .music-card .badge { color: var(--color-music); border-color: rgba(239, 68, 68, 0.15); }
+
+    /* Card Typography */
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    .card-description {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    /* Bottom Action Block */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 2;
+      transition: var(--transition-base);
+    }
+
+    .aviation-card .card-footer { color: var(--color-aviation); }
+    .culinary-card .card-footer { color: var(--color-culinary); }
+    .music-card .card-footer { color: var(--color-music); }
+
+    .arrow-icon {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .project-card:hover .arrow-icon {
+      transform: translateX(4px);
+    }
+
+    /* ============================================================
+       FOOTER SECTION
+       ============================================================ */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding-top: 3rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      z-index: 10;
+      animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      opacity: 0;
+    }
+
+    footer a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 400;
+      transition: var(--transition-base);
+    }
+
+    footer a:hover {
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* ============================================================
+       KEYFRAME ANIMATIONS
+       ============================================================ */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Mobile fine-tuning */
+    @media (max-width: 640px) {
+      body {
+        padding: 1.5rem 1rem;
+      }
+      main {
+        gap: 2.5rem;
+      }
+      .project-card {
+        padding: 1.75rem 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>PPL Flash Cards <span class="sub">FAA Airplane Flying Handbook (FAA-H-8083-3C)</span></h1>
-  <span class="badge"><span class="dot"></span><span id="deckCount">— cards</span></span>
-</header>
+  <!-- Main Content Dashboard -->
+  <main>
+    
+    <!-- Hero / Intro -->
+    <section class="hero-section">
+      <h1 class="hero-title">Interactive Applications</h1>
+      <p class="hero-subtitle">A collection of responsive calculators, tools, and learning utilities.</p>
+    </section>
 
-<main>
-  <div class="toolbar">
-    <input id="search" type="search" placeholder="Search cards (e.g. ‘stall’, ‘VMC’, ‘crosswind’)…" />
-    <select id="category">
-      <option value="__all__">All categories</option>
-    </select>
-    <div class="mode-tabs" role="tablist" aria-label="Mode">
-      <button data-mode="study" class="active">Study</button>
-      <button data-mode="quiz">Quiz</button>
+    <!-- App Links Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- PPL Flash Cards Card -->
+      <a href="ppl-flashcards.html" class="project-card aviation-card" id="card-aviation">
+        <div class="card-top">
+          <div class="card-header">
+            <div class="icon-container">
+              <!-- Airplane Icon -->
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M21 16V14L13 9V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"/>
+              </svg>
+            </div>
+            <span class="badge">Aviation</span>
+          </div>
+          <div class="card-meta">
+            <h2 class="card-title">PPL Flash Cards</h2>
+            <span class="card-subtitle">FAA Airplane Flying Handbook</span>
+          </div>
+          <p class="card-description">Interactive study system for Private Pilot License candidates based on the official FAA training manual.</p>
+        </div>
+        <div class="card-footer">
+          Launch Cards
+          <svg class="arrow-icon" viewBox="0 0 24 24">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- Sous Vide Calculator Card -->
+      <a href="sousvide/index.html" class="project-card culinary-card" id="card-culinary">
+        <div class="card-top">
+          <div class="card-header">
+            <div class="icon-container">
+              <!-- Chef Hat / Flame / Food Icon -->
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9C5 10.42 5.43 11.75 6.16 12.87C5.46 13.8 5 14.94 5 16.2C5 19.4 7.6 22 10.8 22H13.2C16.4 22 19 19.4 19 16.2C19 14.94 18.54 13.8 17.84 12.87C18.57 11.75 19 10.42 19 9C19 5.13 15.87 2 12 2ZM12 4C14.76 4 17 6.24 17 9C17 11.76 14.76 14 12 14C9.24 14 7 11.76 7 9C7 6.24 9.24 4 12 4ZM10.8 20C9.25 20 8 18.75 8 17.2C8 16.03 8.73 15.03 9.77 14.65C10.46 15.5 11.53 16 12.7 16C13.87 16 14.94 15.5 15.63 14.65C16.67 15.03 17.4 16.03 17.4 17.2C17.4 18.75 16.15 20 14.6 20H10.8Z"/>
+              </svg>
+            </div>
+            <span class="badge">Culinary</span>
+          </div>
+          <div class="card-meta">
+            <h2 class="card-title">Sous Vide Calculator</h2>
+            <span class="card-subtitle">Steak Time & Temp Scientific Guide</span>
+          </div>
+          <p class="card-description">Calculate precise cooking times and pasteurization parameters based on thickness, cut, state, and Baldwin food science models.</p>
+        </div>
+        <div class="card-footer">
+          Open Calculator
+          <svg class="arrow-icon" viewBox="0 0 24 24">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- Student Recital Signup Card -->
+      <a href="StudentRecital/index.html" class="project-card music-card" id="card-music">
+        <div class="card-top">
+          <div class="card-header">
+            <div class="icon-container">
+              <!-- Musical Note Icon -->
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M9 18V5L21 3V16M9 18C9 19.6569 7.65685 21 6 21C4.34315 21 3 19.6569 3 18C3 16.3431 4.34315 15 6 15C7.65685 15 9 16.3431 9 18ZM21 16C21 17.6569 19.6569 19 18 19C16.3431 19 15 17.6569 15 16C15 14.3431 16.3431 13 18 13C19.6569 13 21 14.3431 21 16ZM9 10L21 8"/>
+              </svg>
+            </div>
+            <span class="badge">Music</span>
+          </div>
+          <div class="card-meta">
+            <h2 class="card-title">Student Recital</h2>
+            <span class="card-subtitle">Recital Registration & Program Builder</span>
+          </div>
+          <p class="card-description">Easy sign-up form and coordinator tools for building and managing the student music recital repertoire.</p>
+        </div>
+        <div class="card-footer">
+          Register Here
+          <svg class="arrow-icon" viewBox="0 0 24 24">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" />
+          </svg>
+        </div>
+      </a>
+
     </div>
-    <button id="shuffleBtn" class="btn">Shuffle</button>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat">In deck: <b id="statDeck">0</b></div>
-    <div class="stat">Due now: <b id="statDue">0</b></div>
-    <div class="stat">New: <b id="statNew">0</b></div>
-    <div class="stat">Learning: <b id="statLearn">0</b></div>
-    <div class="stat">Mastered: <b id="statMaster">0</b></div>
-    <div class="stat">Streak today: <b id="statStreak">0</b></div>
-    <div class="stat" id="quizStatWrap" style="display:none;">Score: <b id="statScore">0</b> / <b id="statTotal">0</b></div>
-  </div>
+  </main>
 
-  <!-- Study mode -->
-  <section id="studyView">
-    <div class="card-shell" id="cardShell">
-      <div class="card-meta">
-        <span class="chip" id="cardCat">—</span>
-        <span class="mastery" id="cardMastery">—</span>
-      </div>
-      <div class="card-q" id="cardQ">Loading…</div>
-      <div class="card-a hidden" id="cardA"></div>
-      <div class="progress"><div class="bar" id="progressBar"></div></div>
-      <div class="card-actions" id="actionsHidden">
-        <button class="btn primary" id="showAnswer">Show answer  <kbd>Space</kbd></button>
-      </div>
-      <div class="card-actions" id="actionsShown" style="display:none;">
-        <button class="btn again" data-rate="again">Again  <kbd>1</kbd></button>
-        <button class="btn hard"  data-rate="hard">Hard  <kbd>2</kbd></button>
-        <button class="btn good"  data-rate="good">Good  <kbd>3</kbd></button>
-        <button class="btn easy"  data-rate="easy">Easy  <kbd>4</kbd></button>
-      </div>
-      <div class="nav-row">
-        <button id="prevBtn">← Previous</button>
-        <span id="positionLabel">—</span>
-        <button id="nextBtn">Skip →</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Quiz mode -->
-  <section id="quizView" style="display:none;">
-    <div class="card-shell quiz-shell">
-      <div class="card-meta">
-        <span class="chip" id="quizCat">—</span>
-        <span class="quiz-score">Q <b id="quizIdx">0</b> · <b class="correct" id="quizCorrect">0</b> right · <b class="wrong" id="quizWrong">0</b> wrong</span>
-      </div>
-      <div class="card-q" id="quizQ">Loading…</div>
-      <div class="options" id="quizOptions"></div>
-      <div class="card-a hidden" id="quizExplain"></div>
-      <div class="card-actions">
-        <button class="btn primary" id="quizNext">Next question →</button>
-        <button class="btn" id="quizRestart">Restart quiz</button>
-      </div>
-    </div>
-  </section>
-
-  <details class="help">
-    <summary>How this works</summary>
-    <p><b>Study mode</b> uses lightweight spaced repetition. Rate each card <i>Again</i>, <i>Hard</i>, <i>Good</i>, or <i>Easy</i>. Cards you struggle with reappear sooner; cards you master move to longer intervals. Progress is saved in your browser (<code>localStorage</code>).</p>
-    <p><b>Quiz mode</b> turns the deck into a multiple-choice test, drawing distractors from other cards in the same category.</p>
-    <p><b>Keyboard:</b> <kbd>Space</kbd> show answer · <kbd>1–4</kbd> rate · <kbd>←</kbd>/<kbd>→</kbd> nav · <kbd>S</kbd> shuffle</p>
-    <p><b>Reset progress:</b> <button class="btn" id="resetBtn" style="padding:4px 10px;font-size:12px;">Reset all progress</button></p>
-  </details>
-
+  <!-- Footer Info -->
   <footer>
-    Content distilled from the FAA Airplane Flying Handbook (FAA-H-8083-3C). For study purposes only — always cross-reference with the current AFH, AIM, applicable 14 CFR, and your CFI.
+    <p>View the repository on <a href="https://github.com/nelsocs/nelsocs.github.io" target="_blank" rel="noopener noreferrer">GitHub</a> &copy; 2026 Chris Nelson</p>
   </footer>
-</main>
 
-<script>
-/* =========================================================================
-   PPL FLASH CARD CONTENT
-   ------------------------------------------------------------------------- */
-const CARDS = [
-  /* ============== Ch 1: Introduction to Flight Training ============== */
-  { cat: "Ch 1 · Flight Training",
-    q: "What is the purpose of the Airman Certification Standards (ACS)?",
-    a: "The ACS integrates the knowledge, risk management, and skill elements required for each task into a single test standard. It defines what a pilot must know, consider, and do to pass each certification test." },
-  { cat: "Ch 1 · Flight Training",
-    q: "Name the three primary methods of mid-air collision avoidance.",
-    a: "(1) Effective visual scanning using a series of short, regularly spaced eye movements; (2) Clearing turns and proper traffic-pattern entries; (3) Using available systems (e.g., ADS-B traffic) — but never as a substitute for see-and-avoid." },
-  { cat: "Ch 1 · Flight Training",
-    q: "What is the role of a checklist?",
-    a: "To ensure that critical items are not overlooked, especially during high-workload phases like takeoff, before landing, and emergencies. Checklists are mandatory items, not memory aids." },
-  { cat: "Ch 1 · Flight Training",
-    q: "What is the FAA WINGS program?",
-    a: "A voluntary pilot proficiency program that satisfies the flight review requirement of 14 CFR §61.56 when a pilot completes the prescribed knowledge and flight activities at any phase level within the 24 calendar months." },
-  { cat: "Ch 1 · Flight Training",
-    q: "What is stall awareness, in one sentence?",
-    a: "The continuous understanding that a stall is a function of angle of attack — not airspeed — and can occur at any airspeed, attitude, and power setting." },
-
-  /* ============== Ch 2: Ground Operations ============== */
-  { cat: "Ch 2 · Ground Ops",
-    q: "What is the purpose of a preflight visual inspection?",
-    a: "To determine that the airplane is safe and legal for the proposed flight by checking for damage, leaks, loose fasteners, control freedom and direction, fuel quantity/contamination, oil level, tire condition, and required documents." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What does the acronym PAVE stand for in risk management?",
-    a: "Pilot – Aircraft – enVironment – External pressures. It is used during preflight to categorize and assess risks." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What does IMSAFE evaluate?",
-    a: "Pilot fitness: Illness, Medication, Stress, Alcohol, Fatigue, Emotion / Eating." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "How should flight controls be positioned while taxiing in a quartering headwind?",
-    a: "Aileron INTO the wind (stick toward the wind), elevator NEUTRAL. ('Dive away from a tailwind, climb into a headwind.')" },
-  { cat: "Ch 2 · Ground Ops",
-    q: "How should flight controls be positioned while taxiing in a quartering tailwind?",
-    a: "Aileron AWAY from the wind (stick away from the wind), elevator DOWN (forward). The wind is trying to lift the upwind wing and the tail." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What is detonation?",
-    a: "An uncontrolled, explosive ignition of the fuel/air mixture inside the cylinder. Causes high cylinder pressures and temperatures; can damage the engine. Often caused by low-grade fuel, lean mixtures at high power, or excessive cylinder head temperature." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What is pre-ignition?",
-    a: "Ignition of the fuel/air charge prior to the spark plug firing, usually caused by a hot spot in the combustion chamber (e.g., glowing carbon)." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "Why hold the brakes and bring the throttle to idle before engine shutdown?",
-    a: "Idle for a brief cool-down period stabilizes temperatures and clears any spark plug fouling; brakes prevent unexpected movement during the mixture-cut shutdown." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What is the proper engine-start procedure when the engine is loaded (flooded)?",
-    a: "Mixture idle cutoff, throttle full open, crank engine. As it fires, retard the throttle and advance the mixture." },
-
-  /* ============== Ch 3: Basic Flight Maneuvers ============== */
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What are the Four Fundamentals of flight?",
-    a: "Straight-and-level flight, turns, climbs, and descents — every maneuver is a combination of these four." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "Define 'attitude flying'.",
-    a: "Controlling the airplane's attitude (pitch and bank) by reference to the natural horizon or instruments to achieve desired performance." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What primarily controls airspeed in steady flight, and what primarily controls altitude (rate of climb/descent)?",
-    a: "In conventional pitch/power thinking: pitch primarily controls airspeed and power primarily controls altitude / vertical speed in steady flight. (The AFH energy-management chapter notes both work together — see Ch 4.)" },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "Why does an airplane have a tendency to turn left during takeoff and climb (with a tractor propeller)?",
-    a: "The four left-turning tendencies: torque reaction, P-factor (asymmetric blade loading at high AOA), corkscrewing slipstream striking the vertical stabilizer, and gyroscopic precession (most evident in tailwheel airplanes during tail-up rotation)." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "Define 'load factor'.",
-    a: "The ratio of total lift produced by the wings to the weight of the airplane (n = L/W), expressed in Gs. In level flight at 60° bank, n = 2." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What is the relationship between angle of bank and stall speed?",
-    a: "Stall speed increases with the square root of the load factor: Vs(bank) = Vs × √n. At 60° bank, n=2 and stall speed increases by ~41%." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What is the purpose of trim?",
-    a: "To relieve control pressures so the pilot can hold a desired attitude with little or no input — not to set or change attitude." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What is adverse yaw, and how is it counteracted?",
-    a: "Adverse yaw is yaw opposite the direction of roll caused by the down-going (rising) wing generating more induced drag from its deflected aileron. It is counteracted by coordinated rudder pressure in the direction of the turn." },
-  { cat: "Ch 3 · Basic Maneuvers",
-    q: "What is the best-glide speed used for, and what determines it?",
-    a: "Best-glide speed (L/Dmax) produces the maximum gliding distance per unit of altitude lost. It is published in the POH at maximum gross weight and decreases at lower weights." },
-
-  /* ============== Ch 4: Energy Management ============== */
-  { cat: "Ch 4 · Energy Mgmt",
-    q: "What are the two primary forms of energy a pilot manages?",
-    a: "Kinetic energy (airspeed) and potential energy (altitude). Chemical energy (fuel) feeds them via thrust." },
-  { cat: "Ch 4 · Energy Mgmt",
-    q: "Which control is the primary energy-ADDING device, and which is the primary energy-EXCHANGE device?",
-    a: "The throttle is the primary energy-adding device (adds/removes total mechanical energy). The elevator is the primary energy-exchange device (trades altitude for airspeed and vice versa)." },
-  { cat: "Ch 4 · Energy Mgmt",
-    q: "What is the danger of being slow AND low simultaneously?",
-    a: "Both stores of energy are depleted, leaving the pilot with little ability to maneuver, climb, or recover from an upset or wind shear. This is the energy state most likely to lead to a stall/spin or loss of control." },
-  { cat: "Ch 4 · Energy Mgmt",
-    q: "Why can't the elevator alone arrest a high sink rate at low energy?",
-    a: "Pulling the nose up increases AOA and induced drag; at low airspeed/power, this can deepen the deceleration and sink rate (the 'irreversible deceleration' region or back side of the power curve). Power must be added simultaneously." },
-  { cat: "Ch 4 · Energy Mgmt",
-    q: "State the three basic rules of energy control from AFH Chapter 4.",
-    a: "(1) Manage total energy with the throttle. (2) Manage energy distribution between altitude and airspeed with the elevator. (3) When energy is low, you must add power AND lower pitch to recover." },
-
-  /* ============== Ch 5: Maintaining Aircraft Control (UPRT) ============== */
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What defines an 'airplane upset'?",
-    a: "Unintentional pitch attitude greater than 25° nose-up or 10° nose-down, bank greater than 45°, or flight within these parameters but at airspeeds inappropriate for the conditions." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Define angle of attack (AOA).",
-    a: "The acute angle between the chord line of the wing and the relative wind (the direction of the airplane's motion through the air)." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What is the critical angle of attack, and why does it matter?",
-    a: "The AOA beyond which a wing's airflow separates and lift decreases dramatically — i.e., the wing stalls. It is the SAME angle regardless of airspeed, attitude, weight, or load factor." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Describe slow flight as defined in the current AFH.",
-    a: "Flight at an airspeed at which any further increase in AOA, increase in load factor, or reduction in power would result in an impending stall (no stall warning yet, or just at the edge of one). Typically 5–10 kt above stall." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What are the fundamentals of stall recovery (memorize)?",
-    a: "(1) Reduce AOA – pitch down. (2) Roll wings level. (3) Add appropriate thrust. (4) Return to coordinated flight, then to the desired flight path. Reducing AOA is always step ONE." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What is a secondary stall?",
-    a: "A stall that occurs after a recovery from a previous stall when the pilot tries to return to the original flight path or attitude too quickly, exceeding the critical AOA a second time." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What is an accelerated stall?",
-    a: "A stall that occurs at a higher than published 1-G stall speed because of increased load factor — typically caused by abrupt or excessive control inputs in turns, pull-ups, or recoveries from steep dives." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What is a cross-control stall and when is it most dangerous?",
-    a: "A stall in a slip or skid with crossed controls (e.g., rudder one direction, aileron the other). Most dangerous in the base-to-final turn, where it can produce a sudden roll/spin entry with minimal altitude to recover." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Describe an elevator trim stall.",
-    a: "Demonstrated during a go-around: with full nose-up trim from approach, adding full power produces a strong pitch-up. If the pilot fails to push forward and retrim, the airplane can pitch into a stall." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What two conditions are required for a spin?",
-    a: "The airplane must be (1) stalled and (2) yawed (uncoordinated). A wing must remain stalled throughout the spin." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "List the four phases of a spin.",
-    a: "Entry, Incipient, Developed (fully developed), and Recovery." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Give the standard PARE spin-recovery acronym.",
-    a: "Power – idle; Ailerons – neutral; Rudder – full opposite the rotation; Elevator – briskly forward to break the stall. After rotation stops, neutralize rudder and recover from the dive. Always consult the POH." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "How does a spiral dive differ from a spin?",
-    a: "A spiral dive is NOT stalled — the wings are still flying. Airspeed and G load rapidly increase. Recovery: REDUCE power, roll wings level, then smoothly pull out of the dive (avoid abrupt pull-ups that can over-G the airframe)." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Name the three categories of factors that can lead to an upset.",
-    a: "Environmental (turbulence, wake, icing, wind shear); Mechanical (system failure, autopilot anomaly); Human (IMC, distraction, task saturation, sensory issues, spatial disorientation, startle response)." },
-
-  /* ============== Ch 6: Takeoffs & Departure Climbs ============== */
-  { cat: "Ch 6 · Takeoffs",
-    q: "Define Vx and Vy.",
-    a: "Vx = best ANGLE of climb (most altitude per unit of horizontal distance — used to clear obstacles). Vy = best RATE of climb (most altitude per unit of time)." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "What happens to Vx and Vy as altitude increases?",
-    a: "Vx increases (indicated) and Vy decreases. They converge at the absolute ceiling, where rate of climb equals zero." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Describe a normal takeoff roll.",
-    a: "Apply power smoothly while keeping the airplane straight with rudder. Maintain a takeoff/climb attitude after rotation. Allow airspeed to build to Vy (or Vx if obstacles)." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Describe a crosswind takeoff.",
-    a: "Begin with full aileron INTO the wind. As airspeed increases, gradually reduce aileron deflection while keeping the upwind wing slightly low. Use rudder to keep the airplane straight. Rotate slightly above normal liftoff speed, then establish a wind correction angle (crab) for climb." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Describe a short-field takeoff.",
-    a: "Use the full runway. Set flaps per POH (often takeoff flaps). Hold brakes, apply full power, check engine instruments, release brakes. Rotate at the recommended speed, climb at Vx until clear of obstacles, then transition to Vy and retract flaps." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Describe a soft-field takeoff.",
-    a: "Keep the airplane moving — do NOT stop on the soft surface. Full aft elevator to transfer weight to the main gear. Apply full power smoothly. Lift off in ground effect at the lowest possible speed, then level off in ground effect to accelerate to Vx or Vy before climbing out." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "What is 'ground effect' and where is it strongest?",
-    a: "A reduction in induced drag (and a change in pitching moment) caused by the proximity of the wing to the surface. It is strongest within one wingspan of the ground." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "What is the danger of lifting off prematurely in ground effect on a short field?",
-    a: "The airplane may not accelerate enough above ground effect to climb out; the additional drag at low altitude can prevent obstacle clearance and even lead to a stall or settling." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Define a rejected takeoff (RTO).",
-    a: "Abandoning the takeoff before liftoff (or shortly after) because of engine, system, or environmental issues. Reduce power, apply brakes, maintain directional control, and turn off the runway if able." },
-
-  /* ============== Ch 7: Ground Reference Maneuvers ============== */
-  { cat: "Ch 7 · Ground Reference",
-    q: "What is the purpose of ground reference maneuvers?",
-    a: "To develop the pilot's ability to maneuver the airplane while dividing attention between the flight path, ground references, and other traffic — primarily for wind-correction skills used in traffic patterns." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "At what altitude are ground reference maneuvers normally flown?",
-    a: "Generally 600–1,000 ft AGL — low enough that drift is perceptible but high enough to allow a safe recovery from emergencies and clear obstacles." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "What is the relationship between groundspeed and bank angle in a turn around a point?",
-    a: "Higher groundspeed (tailwind portion) requires steeper bank to maintain a constant radius. Lower groundspeed (headwind portion) requires shallower bank." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "Describe a rectangular course.",
-    a: "Fly equal distances on each side of a rectangle (like a traffic pattern). Crab into the wind on the upwind/downwind legs to track straight; vary bank angle in turns based on groundspeed." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "Describe S-turns across a road.",
-    a: "Fly a series of equal semicircles on opposite sides of a road, perpendicular to the wind. Steepest bank at the points of greatest groundspeed (tailwind crossings), shallowest at headwind crossings." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "What is the defining feature of eights-on-pylons (a Commercial maneuver)?",
-    a: "The pilot flies at the 'pivotal altitude' so that the line-of-sight reference from the pilot to the pylon remains parallel to the lateral axis of the airplane. Pivotal altitude = groundspeed² / 11.3 (kt) or /15 (mph)." },
-
-  /* ============== Ch 8: Airport Traffic Patterns ============== */
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "Name the five legs of a standard airport traffic pattern.",
-    a: "Departure (upwind), crosswind, downwind, base, and final approach." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "What is the standard pattern altitude for general aviation airplanes?",
-    a: "Typically 1,000 ft AGL (1,500 ft AGL for large/turbine aircraft), unless otherwise specified by the AFD/Chart Supplement." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "What is the standard traffic-pattern direction?",
-    a: "Left turns, unless otherwise indicated (right traffic indicated by L-shaped traffic indicators, segmented circle, or chart notation)." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "Recommended entry to a non-towered airport pattern?",
-    a: "Enter the downwind at pattern altitude on a 45° angle abeam the midpoint of the runway, after overflying the airport (if needed) at least 500 ft above pattern altitude to check the wind sock and traffic." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "What CTAF self-announce calls are recommended at non-towered airports?",
-    a: "10 miles inbound, entering the downwind, turning base, turning final, and clear of the runway. Use the airport name on both the opening and closing of every call." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "Why is the base-to-final turn statistically the most dangerous in the pattern?",
-    a: "Many stall/spin accidents happen here from overshooting final, the pilot's instinct to tighten the turn with rudder ('skid'), and the resulting uncoordinated cross-control stall at low altitude with no recovery room." },
-
-  /* ============== Ch 9: Approaches & Landings ============== */
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is a stabilized approach?",
-    a: "An approach in which the airplane is on the proper glidepath at the correct airspeed and descent rate, in landing configuration with proper trim and power, with only small adjustments required. The approach must be stabilized by a specified gate (e.g., 500–1,000 ft AGL) or a go-around is required." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Name the four phases of a normal landing.",
-    a: "Base leg, final approach, round out (flare), and touchdown / after-landing roll." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is the recommended final approach speed for a normal landing?",
-    a: "Typically 1.3 × Vso (Vref) with full flaps — adjusted for wind and gusts (commonly add half the gust factor)." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Describe the round out (flare).",
-    a: "A smooth, gradual transition from the final-approach descent to a nose-slightly-high attitude that arrests the descent and bleeds off airspeed, allowing a soft touchdown on the main gear." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Describe a crosswind approach using the wing-low (sideslip) method.",
-    a: "Lower the upwind wing to stop drift, hold the longitudinal axis aligned with the runway with opposite rudder, and touch down on the upwind main wheel first, followed by the other main, then the nose." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is a forward slip to a landing?",
-    a: "An uncoordinated maneuver in which the airplane's longitudinal axis is NOT aligned with the flight path — used to lose altitude rapidly without increasing airspeed. Aileron one direction, opposite rudder. Useful when high on final, especially without flaps." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is the difference between a slip and a skid?",
-    a: "Slip: bank angle is too great for the rate of turn; ball is on the inside (low) of the turn. Skid: rate of turn is too great for the bank angle; ball is on the OUTSIDE (high). The skidding turn is the deadly one near the ground (stall → spin)." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What causes a bounced landing, and how is it recovered?",
-    a: "Cause: touchdown at excessive descent rate or with too much airspeed/flat attitude. Recovery (small bounce): add a little power and re-establish the landing attitude. Large bounce: go around." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is porpoising?",
-    a: "Successive bounces caused by touching down nose-wheel-first, which springs the airplane back into the air. Each bounce gets worse if not corrected. The proper response is generally to go around." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is wheelbarrowing?",
-    a: "Excessive forward elevator pressure after touchdown causing weight to transfer to the nose wheel — reducing main-wheel friction and directional control. May lead to loss of directional control or nose-gear damage." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Describe a go-around in three priorities.",
-    a: "(1) Power – full power. (2) Attitude – establish a climb pitch attitude (Vy / obstacle Vx if needed). (3) Configuration – flaps to recommended setting, then positive climb confirmed, gear up if retractable, remaining flaps in stages." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is hydroplaning, and what are its three types?",
-    a: "A loss of tire-to-runway contact caused by water/fluid on the runway. Types: dynamic (standing water), reverted rubber (locked tire on wet surface generates steam), and viscous (thin film on smooth surface)." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Estimate the speed at which dynamic hydroplaning begins.",
-    a: "Approximately 9 × √(tire pressure in psi). E.g., 30 psi tire → ~49 knots." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is a short-field landing?",
-    a: "An approach at the slowest safe airspeed (per POH) with full flaps, aiming for a specific touchdown point with minimal float; firm touchdown on the mains, immediate maximum braking, and full aft elevator." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is a soft-field landing?",
-    a: "A normal-speed approach with full flaps; transfer weight to the mains gently and hold the nose wheel OFF the surface as long as possible with aft elevator. Keep some power in to soften touchdown; avoid braking." },
-
-  /* ============== Ch 10: Performance Maneuvers ============== */
-  { cat: "Ch 10 · Performance",
-    q: "Describe a steep turn (Private ACS).",
-    a: "A 360° (or two 360°s) coordinated level turn at 45° bank, maintaining altitude ±100 ft, airspeed ±10 kt, bank ±5°, and rolling out within 10° of entry heading." },
-  { cat: "Ch 10 · Performance",
-    q: "Why does a steep turn require additional back pressure and power?",
-    a: "Load factor (n=1/cosθ) increases stall speed and induced drag at higher bank angles. Back pressure increases AOA to maintain lift; power compensates for added induced drag to hold altitude/airspeed." },
-  { cat: "Ch 10 · Performance",
-    q: "What is a chandelle (Commercial maneuver)?",
-    a: "A maximum-performance 180° climbing turn beginning from level flight and ending in a wings-level near-stall flight condition at the 180° point. Bank is established in the first 90°, pitch continuously increases for the second 90°." },
-  { cat: "Ch 10 · Performance",
-    q: "What is a lazy eight (Commercial)?",
-    a: "Two 180° turns in opposite directions with continuously changing pitch and bank, forming a figure-eight on the horizon. Pitch and bank reach maximum at the 45° points; airspeed is minimum at the 90° points." },
-
-  /* ============== Ch 11: Night Operations ============== */
-  { cat: "Ch 11 · Night Ops",
-    q: "How long does it take the eyes to fully adapt to darkness?",
-    a: "Approximately 30 minutes for the rods to reach maximum sensitivity. Bright light exposure resets adaptation in seconds." },
-  { cat: "Ch 11 · Night Ops",
-    q: "What is the 'night blind spot'?",
-    a: "An area of low cone density at the center of vision (fovea) that is essentially blind at night. Pilots should use off-center viewing (look 5–10° to the side) to detect dim objects." },
-  { cat: "Ch 11 · Night Ops",
-    q: "Why is supplemental oxygen valuable at night even at moderate altitudes?",
-    a: "Night vision deteriorates noticeably above ~5,000 ft MSL due to hypoxia. Using oxygen at night above 5,000 ft can improve vision." },
-  { cat: "Ch 11 · Night Ops",
-    q: "What is autokinesis?",
-    a: "A visual illusion in which a single, stationary point of light appears to move when stared at for several seconds. Counter by frequently shifting your gaze." },
-  { cat: "Ch 11 · Night Ops",
-    q: "How can a wide runway lead to a landing illusion?",
-    a: "A wider-than-normal runway can make the airplane appear lower than it actually is, causing the pilot to fly a high approach and flare too high (and stall or hard-land)." },
-  { cat: "Ch 11 · Night Ops",
-    q: "How can a narrow runway create a landing illusion?",
-    a: "A narrower-than-normal runway can make the airplane appear higher than it actually is, leading to a low approach with risk of obstacle/terrain impact short of the runway." },
-  { cat: "Ch 11 · Night Ops",
-    q: "What lighting items are required for night flight (14 CFR §91.205)?",
-    a: "Position lights, anti-collision lights, one electric landing light (if for hire), adequate source of electricity, spare fuses (or 3 of each replaceable type). Plus daytime VFR items." },
-
-  /* ============== Ch 12: Complex Airplanes ============== */
-  { cat: "Ch 12 · Complex",
-    q: "What defines a 'complex' airplane?",
-    a: "An airplane with retractable landing gear, flaps, AND a controllable-pitch propeller (or, for jets/turbines, FADEC). A high-performance airplane is one with an engine of more than 200 horsepower." },
-  { cat: "Ch 12 · Complex",
-    q: "What is the principal benefit of flaps?",
-    a: "They increase the wing's camber (and, on some types, area) to provide more lift and drag at low speeds — allowing slower approach speeds, steeper descents without speed gain, and shorter landing rolls." },
-  { cat: "Ch 12 · Complex",
-    q: "How does a constant-speed propeller work?",
-    a: "A governor uses oil pressure to vary blade pitch to maintain a pilot-selected RPM. With higher loads it increases pitch (coarser); with lower loads it decreases pitch (finer)." },
-  { cat: "Ch 12 · Complex",
-    q: "When changing power with a constant-speed prop, what is the proper sequence?",
-    a: "Increasing power: PROP first (to high RPM), then THROTTLE up. Decreasing power: THROTTLE back first, then PROP. The rule is to keep manifold pressure (MAP) at or below RPM/100 limits per the POH." },
-  { cat: "Ch 12 · Complex",
-    q: "What is the purpose of turbocharging?",
-    a: "To maintain sea-level manifold pressure (or higher) at altitude by compressing intake air using exhaust-driven turbines — restoring engine power that would otherwise be lost as air density decreases." },
-  { cat: "Ch 12 · Complex",
-    q: "What is the purpose of landing gear safety devices like the squat switch?",
-    a: "To prevent gear retraction when weight is on the wheels (on the ground) — preventing inadvertent gear-up retractions while taxiing." },
-
-  /* ============== Ch 13: Multiengine (V-speed knowledge useful to PPL) ============== */
-  { cat: "Ch 13 · Multiengine basics",
-    q: "Define Vmc.",
-    a: "Vmc is the minimum airspeed at which an airplane is controllable with the critical engine inoperative (and other specific conditions: max takeoff power, gear up, flaps takeoff, propeller windmilling or feathered as certified, CG aft limit, etc.) — marked by a red radial line on most twin ASIs." },
-  { cat: "Ch 13 · Multiengine basics",
-    q: "What is the 'critical engine'?",
-    a: "The engine whose failure most adversely affects performance and handling. On most US conventional twins (both props turning clockwise), it is the LEFT engine because of P-factor on the right engine's down-going blade producing a longer moment arm." },
-
-  /* ============== Ch 14: Tailwheel ============== */
-  { cat: "Ch 14 · Tailwheel",
-    q: "Why are tailwheel airplanes 'directionally unstable' on the ground?",
-    a: "Because the center of gravity is BEHIND the main gear. Any deviation from straight tracking creates a moment that tends to amplify the swing — requiring active rudder/brake corrections to prevent a ground loop." },
-  { cat: "Ch 14 · Tailwheel",
-    q: "What is a wheel landing (tailwheel)?",
-    a: "A landing made on the main wheels first in a slightly nose-level attitude at higher airspeed, with forward elevator pressure to pin the mains down. The tail is lowered as airspeed decreases." },
-  { cat: "Ch 14 · Tailwheel",
-    q: "What is a three-point landing?",
-    a: "A full-stall landing with all three wheels touching simultaneously in a tail-low attitude — slowest possible touchdown speed." },
-  { cat: "Ch 14 · Tailwheel",
-    q: "What is a ground loop?",
-    a: "An uncontrolled, rapid horizontal rotation about the vertical axis on the ground, usually in tailwheel airplanes, often resulting in wingtip or gear damage. Caused by poor directional control on landing or rollout." },
-
-  /* ============== Ch 18: Emergency Procedures ============== */
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the FIRST action after any in-flight emergency?",
-    a: "Fly the airplane — Aviate, Navigate, Communicate. Establish best-glide speed (or appropriate emergency airspeed) and a positive flight path." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the priority order in a forced landing?",
-    a: "(1) Maintain aircraft control (best glide). (2) Pick the best available landing site. (3) Run the engine-failure checklist / attempt restart. (4) Declare and squawk 7700. (5) Configure and land." },
-  { cat: "Ch 18 · Emergencies",
-    q: "Standard emergency squawk codes?",
-    a: "7500 – hijacking; 7600 – lost communication; 7700 – general emergency." },
-  { cat: "Ch 18 · Emergencies",
-    q: "Engine failure on takeoff — the cardinal rule.",
-    a: "Below a safe altitude (generally below ~500–700 ft AGL): land STRAIGHT AHEAD, with only small turns to avoid obstacles. The 'impossible turn' back to the runway is rarely successful and is a leading cause of stall/spin accidents." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the proper response to an engine fire in flight?",
-    a: "Mixture: idle cutoff. Fuel selector: OFF. Master: as required (per POH). Cabin heat/air: closed (to prevent smoke). Descend at higher airspeed to keep flames away from the cabin and attempt to extinguish. Land as soon as possible." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the recommended approach for landing on water (ditching)?",
-    a: "Land into the wind in light winds; align with the swells (parallel to crests) in heavy seas. Touch down on the rear of a swell, in a nose-high, slightly tail-low attitude at minimum forward speed. Doors slightly cracked to prevent jamming." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the proper response to electrical fire / smoke in the cockpit?",
-    a: "Master switch OFF, all electrical loads off, then bring essential items back online one at a time if needed, while ventilating and preparing to land." },
-  { cat: "Ch 18 · Emergencies",
-    q: "How do you handle a flap failure (asymmetric or split flaps)?",
-    a: "Stop flap movement immediately. Use ailerons to maintain wings level and counter the rolling moment. Higher approach speed, plan for a longer landing rollout, and fly a wider/longer pattern with no further flap movement." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is partial-power loss procedure?",
-    a: "Establish best-glide speed in case it becomes a full failure, head toward a suitable landing area, troubleshoot (carb heat, mixture, fuel selector, primer locked, mags), and declare an emergency. Never assume partial power will get you home." },
-
-  /* ============== AERODYNAMICS / GENERAL (cross-chapter foundations) ============== */
-  { cat: "Aerodynamics",
-    q: "Name the four forces acting on an airplane in flight.",
-    a: "Lift, Weight, Thrust, Drag. In unaccelerated flight: Lift = Weight, Thrust = Drag." },
-  { cat: "Aerodynamics",
-    q: "What two components make up total drag, and how do they vary with airspeed?",
-    a: "Parasite drag (skin friction, form, interference) increases with the SQUARE of airspeed. Induced drag (a byproduct of lift) DECREASES as airspeed increases. Total drag is minimum at L/Dmax." },
-  { cat: "Aerodynamics",
-    q: "What is the 'region of reversed command' (back side of the power curve)?",
-    a: "The airspeed regime below L/Dmax where additional power is required to fly slower in level flight (more induced drag). Pitch and power roles are 'reversed' from intuition." },
-  { cat: "Aerodynamics",
-    q: "Define center of gravity (CG) and explain its importance.",
-    a: "The point at which the airplane's weight is considered to be concentrated. CG position affects stability and control — forward CG = more stable but harder to flare; aft CG = less stable, lower stall speed, but risk of stall/spin and reduced recovery margin." },
-  { cat: "Aerodynamics",
-    q: "What is dihedral and what is its effect?",
-    a: "The upward angle of the wings from root to tip. Dihedral produces lateral stability — when a wing drops, it presents a greater AOA to the relative wind, generating a restoring rolling moment." },
-  { cat: "Aerodynamics",
-    q: "What is the relationship between true airspeed (TAS) and indicated airspeed (IAS)?",
-    a: "TAS is the airplane's actual speed through the air mass. IAS is what the ASI reads; it must be corrected for installation/instrument error (CAS), then for non-standard density to obtain TAS. TAS ≈ IAS at sea level standard; TAS exceeds IAS as altitude/temperature increase." },
-  { cat: "Aerodynamics",
-    q: "What is Mach buffet? (concept relevant to high-altitude/jet operations)",
-    a: "High-speed buffet from shock-wave-induced flow separation on the wing as airflow over portions of the wing approaches/exceeds the speed of sound. Becomes a concern at high altitudes where Mmo is more limiting than Vmo." },
-
-  /* ============== WEATHER & DECISION (lightly covered in AFH; key for PPL) ============== */
-  { cat: "Weather & ADM",
-    q: "What does ADM stand for and what does it focus on?",
-    a: "Aeronautical Decision-Making — a systematic approach to consistently determining the best course of action in response to a given set of circumstances. Focuses on identifying hazards, assessing risk, and using mitigations." },
-  { cat: "Weather & ADM",
-    q: "List the five hazardous attitudes and their antidotes.",
-    a: "Anti-Authority → 'Follow the rules; they're usually right.' Impulsivity → 'Not so fast; think first.' Invulnerability → 'It could happen to me.' Macho → 'Taking chances is foolish.' Resignation → 'I'm not helpless; I can make a difference.'" },
-  { cat: "Weather & ADM",
-    q: "What is the DECIDE model?",
-    a: "Detect a change, Estimate the need to react, Choose a desirable outcome, Identify actions, Do the necessary action, Evaluate the effect." },
-  { cat: "Weather & ADM",
-    q: "What is the '3-P' model?",
-    a: "Perceive – Process – Perform. A continuous loop used during all phases of flight to manage risk." },
-  { cat: "Weather & ADM",
-    q: "What is the danger of 'get-there-itis'?",
-    a: "An external pressure that biases the pilot toward continuing into deteriorating weather, marginal performance, or fatigue — overriding safer alternatives like diverting or staying overnight." },
-  { cat: "Weather & ADM",
-    q: "What is wake turbulence avoidance for a small airplane landing behind a heavy?",
-    a: "Stay AT OR ABOVE the heavier airplane's flight path. Land BEYOND its touchdown point. Wake sinks at about 300–500 fpm and levels off about 900 ft below the generating aircraft." },
-  { cat: "Weather & ADM",
-    q: "What is wind shear, and what are common indicators?",
-    a: "A sudden, drastic change in wind speed and/or direction over a short distance. Indicators: thunderstorms/microbursts, frontal passages, temperature inversions, virga, blowing dust/rings of dust, large IAS fluctuations on approach." },
-
-  /* ============== VFR / CFR knowledge sprinkled (foundational) ============== */
-  { cat: "Regulations (foundational)",
-    q: "Recency-of-experience to carry passengers (day VFR)?",
-    a: "Within the preceding 90 days, 3 takeoffs and 3 landings to a full stop in an aircraft of the same category, class, and type (if required). (14 CFR §61.57(a))" },
-  { cat: "Regulations (foundational)",
-    q: "Recency-of-experience to carry passengers at night?",
-    a: "Within the preceding 90 days, 3 takeoffs and 3 LANDINGS TO A FULL STOP at night (1 hr after sunset to 1 hr before sunrise). (14 CFR §61.57(b))" },
-  { cat: "Regulations (foundational)",
-    q: "What is required for a flight review?",
-    a: "A minimum of 1 hour ground training and 1 hour flight training within the preceding 24 calendar months, with an authorized instructor (14 CFR §61.56). May be satisfied by WINGS phase completion." },
-  { cat: "Regulations (foundational)",
-    q: "Fuel required for VFR day cross-country flight?",
-    a: "Enough fuel to fly to the first point of intended landing AND, assuming normal cruising speed, to fly thereafter for at least 30 minutes (14 CFR §91.151). 45 minutes for VFR night." },
-  { cat: "Regulations (foundational)",
-    q: "Required preflight action items (per 14 CFR §91.103)?",
-    a: "Weather reports/forecasts, fuel requirements, alternatives if the flight cannot be completed as planned, traffic delays, and (for IFR or any flight not in vicinity of an airport) runway lengths and takeoff/landing distance data." },
-  { cat: "Regulations (foundational)",
-    q: "Minimum safe altitudes over congested areas vs. other areas (91.119)?",
-    a: "Congested: 1,000 ft above the highest obstacle within 2,000 ft horizontal. Other than congested: 500 ft AGL. Open water / sparsely populated: not closer than 500 ft to any person, vessel, vehicle, or structure. Plus an altitude allowing emergency landing without undue hazard at all times." },
-  { cat: "Regulations (foundational)",
-    q: "Basic VFR weather minimums in Class E below 10,000 MSL?",
-    a: "3 statute miles visibility; cloud clearances of 500 ft below, 1,000 ft above, 2,000 ft horizontal." },
-  { cat: "Regulations (foundational)",
-    q: "What documents must be on board the airplane (ARROW)?",
-    a: "Airworthiness certificate, Registration, Radio license (if international), Operating limitations (POH/AFM, placards, markings), Weight & balance data. (Sometimes taught as 'AROW' domestically.)" },
-
-  /* ============== Cross-country / navigation foundations ============== */
-  { cat: "Navigation & XC",
-    q: "What is dead reckoning?",
-    a: "Navigation by computing position from a known starting point using heading, airspeed, time, and wind — independent of external references." },
-  { cat: "Navigation & XC",
-    q: "What is pilotage?",
-    a: "Navigation by visual reference to ground features identified on a sectional chart." },
-  { cat: "Navigation & XC",
-    q: "What information is on a standard sectional aeronautical chart legend?",
-    a: "Airport details (towered/non-towered, runway length, lighting, services), navaids and frequencies, airspace boundaries and floors/ceilings, obstructions, terrain, and special use airspace." },
-  { cat: "Navigation & XC",
-    q: "How are true course and magnetic course related?",
-    a: "Magnetic course = True course ± variation (East subtract, West add — 'East is least, West is best')." },
-  { cat: "Navigation & XC",
-    q: "Define groundspeed.",
-    a: "The airplane's speed over the ground — TAS adjusted for the wind component along the course." },
-
-  /* ============== Systems sprinkled (airworthiness / engine / pitot-static) ============== */
-  { cat: "Systems",
-    q: "What does carburetor ice form from, and what conditions favor it?",
-    a: "Fuel vaporization and pressure drop in the carburetor venturi cool the air, condensing and freezing moisture. Most prevalent at temperatures between roughly 20°F and 70°F (–7°C to 21°C) with high humidity — even on a warm day." },
-  { cat: "Systems",
-    q: "What does applying carburetor heat do, and what is its initial effect on engine performance?",
-    a: "It routes warm, unfiltered air to the carb to melt/prevent ice. It initially produces a slight drop in RPM/MAP because hot air is less dense (richer mixture) — followed by a slight rise as ice melts, then a return to normal." },
-  { cat: "Systems",
-    q: "What three instruments rely on the pitot-static system?",
-    a: "Airspeed indicator (pitot + static), altimeter (static only), and vertical speed indicator (static only)." },
-  { cat: "Systems",
-    q: "What happens if the static port becomes blocked but the pitot remains clear?",
-    a: "Altimeter freezes at the altitude where blockage occurred. VSI reads zero. ASI reads low when climbing and high when descending below the blockage altitude." },
-  { cat: "Systems",
-    q: "Which gyroscopic instruments are vacuum-driven and which are typically electric in a traditional six-pack?",
-    a: "Vacuum-driven: attitude indicator and heading indicator. Electric: turn coordinator. (Many modern airplanes mix these — verify the specific airplane.)" },
-  { cat: "Systems",
-    q: "How does a magneto provide ignition independent of the electrical system?",
-    a: "It is a self-contained AC generator that produces high-voltage spark via a rotating magnet, coil, and breaker points — requires no battery once the engine is turning." },
-  { cat: "Systems",
-    q: "Why is the mixture leaned at altitude?",
-    a: "Less dense air at altitude makes the fuel/air mixture progressively richer at a given throttle setting. Leaning restores proper stoichiometry, prevents fouling, and produces best power or best economy per POH." },
-
-  /* Additional polish cards */
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What recovery action best avoids a secondary stall?",
-    a: "Reduce AOA assertively but smoothly, return to coordinated wings-level flight, and only then return to the original altitude — don't try to immediately climb back, which can re-stall the wing." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What does it mean to 'fly the airplane onto the runway' versus 'land it'?",
-    a: "Flying it onto the runway means touching down at higher than necessary speed without a proper round out — common error that can cause wheelbarrowing, porpoising, or runway excursions. Always complete the round out to the appropriate landing attitude." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "What is rotation speed (Vr) for a typical light single?",
-    a: "The airspeed at which the pilot smoothly applies back pressure to lift the nose for takeoff. In light singles, it is typically just above the stall speed for the configuration — published in the POH (often a few knots below liftoff speed)." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "What does a 'L-shaped' tetrahedron or wind tee indicate at a non-towered airport?",
-    a: "It indicates the direction of takeoff and landing. Combined with the segmented circle's traffic-pattern indicators, it shows the standard pattern direction for each runway." },
-  { cat: "Aerodynamics",
-    q: "Why does an airplane sink in a steep, uncoordinated turn?",
-    a: "Increased load factor at high bank raises stall speed and induced drag. If the pilot fails to add back pressure (and power), vertical lift decreases and the airplane descends. Excessive bank with inadequate G can also bring the wing close to the critical AOA." },
-  { cat: "Aerodynamics",
-    q: "What is the difference between maneuvering speed (Va) and never-exceed speed (Vne)?",
-    a: "Va: maximum speed at which abrupt full deflection of any single primary flight control will not over-stress the airframe (the wing will stall first). Vne: speed never to be exceeded under any circumstances — red radial line on ASI." },
-  { cat: "Aerodynamics",
-    q: "Why does Va decrease at lower weights?",
-    a: "Va is the speed at which the stall AOA produces the airplane's design limit load factor. At lower weights, less airspeed is required to reach the same load factor — so Va is lower at lower weights." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the standard distress emergency frequency for VHF radio?",
-    a: "121.5 MHz. Use 'Mayday, Mayday, Mayday' for distress (immediate danger), 'Pan-Pan, Pan-Pan, Pan-Pan' for urgency." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What is the proper response to a runaway electric trim?",
-    a: "Override with hand pressure on the controls, disconnect the autopilot (if engaged), pull the trim circuit breaker / disable the trim system per POH, and re-trim manually." },
-  { cat: "Weather & ADM",
-    q: "What is CRM/SRM?",
-    a: "CRM = Crew Resource Management (multi-pilot); SRM = Single-Pilot Resource Management. The art of managing all resources — internal (your skills, ADM, automation knowledge) and external (ATC, passengers, charts, instruments) — to fly safely." },
-  { cat: "Navigation & XC",
-    q: "How do you compute time, fuel, and distance using the E6B or electronic equivalent?",
-    a: "Time = Distance / Groundspeed. Fuel = Time × Fuel Burn Rate. Plan with calculated wind components from forecast winds aloft, and apply leg-by-leg corrections in flight." },
-  { cat: "Systems",
-    q: "What is the function of an alternator versus a generator?",
-    a: "Both convert mechanical energy to electrical energy. Alternators produce AC rectified to DC and can produce useful output at idle RPM — they are lighter and more common in modern airplanes. Generators produce DC directly but require higher RPM to put out adequate current." },
-  { cat: "Ch 12 · Complex",
-    q: "What is propeller 'feathering' on a multiengine airplane?",
-    a: "Rotating the blades to ~90° to the direction of flight, parallel to the airstream, to minimize drag on a failed engine. Single-engine training airplanes generally cannot feather." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Why does an AOA indicator improve safety over an airspeed indicator alone?",
-    a: "It shows the wing's actual margin to the critical AOA directly — independent of weight, bank, G load, or density altitude. The ASI only correlates with stall AOA at one specific weight and 1 G." },
-  { cat: "Ch 11 · Night Ops",
-    q: "What night illusion is associated with sloped terrain or upsloping runways?",
-    a: "An upsloping runway/terrain can create the illusion that the airplane is higher than it actually is, leading to a low approach. A downsloping runway creates the opposite illusion." },
-  { cat: "Ch 8 · Traffic Patterns",
-    q: "What altitude should you remain at before descending to pattern altitude when overflying a non-towered airport?",
-    a: "At least 500 ft above pattern altitude (typically 1,500 ft AGL or higher), to remain clear of in-pattern traffic until established on the 45° downwind entry." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Describe the 'noise abatement' takeoff concept.",
-    a: "Procedures designed to minimize noise impact on areas surrounding the airport — e.g., specific climb profiles, runway selection, and turn restrictions. Follow published procedures while preserving safety margins; never let noise procedures compromise terrain or obstacle clearance." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is the 'aiming point' on a stabilized approach?",
-    a: "The point on the runway that appears stationary in your windscreen during the approach — if it moves UP, you are LOW (undershooting); if it moves DOWN, you are HIGH (overshooting)." },
-  { cat: "Aerodynamics",
-    q: "Define lift, in plain words.",
-    a: "Lift is the aerodynamic force produced perpendicular to the relative wind, mainly by the difference in pressure between the upper and lower surfaces of the wing as it moves through the air at some positive AOA." },
-  { cat: "Aerodynamics",
-    q: "What four factors affect the magnitude of lift?",
-    a: "Wing surface area, the coefficient of lift (a function of airfoil shape and AOA), air density, and velocity squared. L = ½ × ρ × V² × S × CL." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What should you do immediately upon an engine failure in cruise?",
-    a: "Pitch for best glide speed → identify the best landing site within glide range → turn toward it → run the engine-failure checklist (carb heat, fuel selector, mixture, mags, primer, master) → communicate (Mayday, 121.5, 7700) → secure the airplane → land." },
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "Why is uncoordinated flight (slip or skid) particularly dangerous near the stall?",
-    a: "A stall in uncoordinated flight will drop the LOW (slipping) or RISING (skidding) wing first, producing an asymmetric stall and possible spin entry — especially dangerous low to the ground." },
-  { cat: "Ch 11 · Night Ops",
-    q: "How do you scan effectively for traffic at night?",
-    a: "Use off-center viewing (look ~10° to one side), and move your eyes in small increments every 1–2 seconds. Avoid staring at a single point (autokinesis)." },
-  { cat: "Ch 7 · Ground Reference",
-    q: "Why is dividing attention essential during ground reference maneuvers?",
-    a: "Because the pilot must simultaneously control the airplane, maintain altitude/airspeed, watch ground references for drift, and scan for other traffic — directly training the pilot for traffic patterns and emergency landings." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "What is the proper crosswind correction technique on the after-landing roll?",
-    a: "Increase aileron deflection INTO the wind progressively as airspeed decreases — full deflection by taxi speed. Use rudder and brakes as needed for directional control." },
-  { cat: "Ch 12 · Complex",
-    q: "Why might a pilot 'over-square' an engine (MAP > RPM/100), and is it permitted?",
-    a: "Modern engines designed for it (per the POH) often allow operation above the old 'square' rule with no harm. Always operate within the published power chart and avoid combinations the POH prohibits to prevent detonation or stress." },
-  { cat: "Systems",
-    q: "What does an EGT (Exhaust Gas Temperature) gauge help the pilot do?",
-    a: "Lean the mixture precisely — peak EGT marks the stoichiometric mixture; pilots lean to a target offset (typically rich of peak or lean of peak per POH) to manage power, economy, and cylinder temperatures." },
-  { cat: "Aerodynamics",
-    q: "Why does indicated stall speed remain (roughly) the same at all altitudes for a given weight and configuration?",
-    a: "Stall is a function of AOA, and dynamic pressure (½ρV²) at the critical AOA stays roughly constant — so the ASI, which measures dynamic pressure, reads about the same. TAS, however, rises with altitude." },
-  { cat: "Regulations (foundational)",
-    q: "Class B, C, D, E airspeed limits below 10,000 MSL (excluding inside Class B)?",
-    a: "Below 10,000 MSL: maximum 250 KIAS (anywhere). Below Class B / in Class B veil corridors: 200 KIAS. Within Class C or D and within 4 NM of the primary airport at or below 2,500 AGL: 200 KIAS." },
-
-  /* Extra emphasis on common Private knowledge gaps */
-  { cat: "Ch 5 · Slow Flight & Stalls",
-    q: "What is the 'startle response' and how is it best mitigated?",
-    a: "An involuntary cognitive and physical reaction to a sudden, unexpected event that can momentarily impair performance. Mitigation: realistic UPRT training, predetermined responses to common emergencies, callouts, and resisting the urge to react instinctively before assessing." },
-  { cat: "Ch 2 · Ground Ops",
-    q: "What does a magneto check during run-up verify?",
-    a: "Each magneto can fire its plugs independently (showing no broken P-lead) and there is no excessive RPM drop or rough running indicating fouled plugs or a failing mag. Drops must be within limits in the POH (typically 125–175 RPM with a max differential of ~50 RPM between mags)." },
-  { cat: "Ch 6 · Takeoffs",
-    q: "Why is a 'positive rate of climb' required before retracting the gear on a retractable?",
-    a: "To ensure the airplane is actually climbing — not just lifted off in ground effect. Retracting too early can leave the airplane unable to climb out of ground effect, in a configuration that's hard to land safely if the engine falters." },
-  { cat: "Aerodynamics",
-    q: "What is wash-out and what does it do?",
-    a: "A deliberate twist of the wing such that the wingtip has a lower angle of incidence than the wing root. It ensures the wing root stalls first, preserving aileron effectiveness at the tip during the stall break." },
-  { cat: "Ch 9 · Approach & Land",
-    q: "Three common causes of overshooting the runway centerline on base-to-final?",
-    a: "(1) Excessive groundspeed in the turn (tailwind on base). (2) Late turn from base. (3) Distraction or poor pattern planning. The CORRECT correction is to go around or steepen bank with COORDINATED inputs — NEVER to skid with rudder, which can produce a stall/spin." },
-  { cat: "Ch 18 · Emergencies",
-    q: "What does the acronym 'ABC' help you do during an engine failure?",
-    a: "Airspeed (best glide), Best place to land, Checklist/Cause/Communicate. A simple memory aid for the engine-out flow." }
-];
-
-/* =========================================================================
-   APP STATE
-   ------------------------------------------------------------------------- */
-const LS_KEY = "afh_pplcards_v1";
-const state = {
-  mode: "study",                 // 'study' | 'quiz'
-  category: "__all__",
-  search: "",
-  deck: [],                      // filtered + ordered card list (refs to CARDS index)
-  idx: 0,
-  studyMap: loadState(),         // per-card SR data keyed by question text
-  showAnswer: false,
-  streakDate: null,
-  streakCount: 0,
-  quiz: {
-    list: [],
-    idx: 0,
-    correct: 0,
-    wrong: 0,
-    answered: false,
-  },
-};
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return {};
-    const obj = JSON.parse(raw);
-    return obj.cards || {};
-  } catch (e) { return {}; }
-}
-function saveState() {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify({
-      cards: state.studyMap,
-      streakDate: state.streakDate,
-      streakCount: state.streakCount,
-    }));
-  } catch (e) {}
-}
-function loadMeta() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return;
-    const obj = JSON.parse(raw);
-    state.streakDate = obj.streakDate || null;
-    state.streakCount = obj.streakCount || 0;
-  } catch (e) {}
-}
-
-/* =========================================================================
-   SPACED REPETITION (simplified SM-2-ish)
-   ------------------------------------------------------------------------- */
-function cardKey(card) { return card.q; }
-function getSR(card) {
-  const k = cardKey(card);
-  if (!state.studyMap[k]) {
-    state.studyMap[k] = { ease: 2.3, interval: 0, reps: 0, due: 0, lapses: 0 };
-  }
-  return state.studyMap[k];
-}
-function rate(card, rating /* 'again' | 'hard' | 'good' | 'easy' */) {
-  const sr = getSR(card);
-  const now = Date.now();
-  if (rating === "again") {
-    sr.reps = 0;
-    sr.interval = 1 / (24 * 60); // 1 minute
-    sr.ease = Math.max(1.3, sr.ease - 0.2);
-    sr.lapses = (sr.lapses || 0) + 1;
-  } else if (rating === "hard") {
-    sr.reps += 1;
-    sr.interval = Math.max(1, sr.interval * 1.2);
-    sr.ease = Math.max(1.3, sr.ease - 0.15);
-  } else if (rating === "good") {
-    sr.reps += 1;
-    if (sr.reps === 1) sr.interval = 1;
-    else if (sr.reps === 2) sr.interval = 3;
-    else sr.interval = sr.interval * sr.ease;
-  } else if (rating === "easy") {
-    sr.reps += 1;
-    if (sr.reps === 1) sr.interval = 3;
-    else if (sr.reps === 2) sr.interval = 7;
-    else sr.interval = sr.interval * sr.ease * 1.3;
-    sr.ease = sr.ease + 0.15;
-  }
-  sr.due = now + sr.interval * 24 * 60 * 60 * 1000;
-  bumpStreak();
-  saveState();
-}
-function bumpStreak() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().slice(0,10);
-  if (state.streakDate !== todayStr) {
-    if (state.streakDate) {
-      const last = new Date(state.streakDate);
-      const diff = Math.round((today - last) / (1000*60*60*24));
-      state.streakCount = (diff === 1) ? state.streakCount + 1 : 1;
-    } else {
-      state.streakCount = 1;
-    }
-    state.streakDate = todayStr;
-  }
-}
-function masteryLabel(card) {
-  const sr = state.studyMap[cardKey(card)];
-  if (!sr || sr.reps === 0) return { text: "NEW", cls: "new" };
-  if (sr.reps < 2)            return { text: "LEARNING", cls: "learn" };
-  if (sr.interval < 21)       return { text: "REVIEWING", cls: "review" };
-  return { text: "MASTERED", cls: "mastered" };
-}
-
-/* =========================================================================
-   DECK BUILDING
-   ------------------------------------------------------------------------- */
-function buildCategories() {
-  const set = new Set(CARDS.map(c => c.cat));
-  const sel = document.getElementById("category");
-  // Preserve __all__
-  for (const c of [...set].sort()) {
-    const o = document.createElement("option");
-    o.value = c; o.textContent = c;
-    sel.appendChild(o);
-  }
-}
-function filtered() {
-  const q = state.search.trim().toLowerCase();
-  return CARDS.filter(c =>
-    (state.category === "__all__" || c.cat === state.category) &&
-    (q === "" || (c.q + " " + c.a + " " + c.cat).toLowerCase().includes(q))
-  );
-}
-function buildDeck() {
-  const items = filtered();
-  // sort: due now first, then new, then upcoming
-  const now = Date.now();
-  items.sort((a, b) => {
-    const A = getSR(a), B = getSR(b);
-    const aDue = A.due || 0, bDue = B.due || 0;
-    const aIsDue = (A.reps === 0) || aDue <= now;
-    const bIsDue = (B.reps === 0) || bDue <= now;
-    if (aIsDue !== bIsDue) return aIsDue ? -1 : 1;
-    return aDue - bDue;
-  });
-  state.deck = items;
-  state.idx = 0;
-  state.showAnswer = false;
-}
-function shuffleDeck() {
-  for (let i = state.deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [state.deck[i], state.deck[j]] = [state.deck[j], state.deck[i]];
-  }
-  state.idx = 0;
-  state.showAnswer = false;
-}
-
-/* =========================================================================
-   RENDER
-   ------------------------------------------------------------------------- */
-const $ = sel => document.querySelector(sel);
-function renderStats() {
-  const total = CARDS.length;
-  const now = Date.now();
-  let due = 0, fresh = 0, learning = 0, mastered = 0;
-  for (const c of CARDS) {
-    const sr = state.studyMap[cardKey(c)];
-    if (!sr || sr.reps === 0) { fresh++; due++; continue; }
-    if (sr.due <= now) due++;
-    if (sr.reps < 2) learning++;
-    else if (sr.interval >= 21) mastered++;
-  }
-  $("#statDeck").textContent = state.deck.length;
-  $("#statDue").textContent = due;
-  $("#statNew").textContent = fresh;
-  $("#statLearn").textContent = learning;
-  $("#statMaster").textContent = mastered;
-  $("#statStreak").textContent = state.streakCount || 0;
-  $("#deckCount").textContent = total + " cards";
-}
-function renderStudy() {
-  const card = state.deck[state.idx];
-  if (!card) {
-    $("#cardShell").innerHTML =
-      `<div class="empty">No cards match your filters.<br><br>
-       Try clearing the search or selecting another category.</div>`;
-    return;
-  }
-  $("#cardCat").textContent = card.cat;
-  const m = masteryLabel(card);
-  $("#cardMastery").innerHTML = `<span class="${m.cls}">${m.text}</span>`;
-  $("#cardQ").textContent = card.q;
-  $("#cardA").textContent = card.a;
-  if (state.showAnswer) {
-    $("#cardA").classList.remove("hidden");
-    $("#actionsHidden").style.display = "none";
-    $("#actionsShown").style.display  = "flex";
-  } else {
-    $("#cardA").classList.add("hidden");
-    $("#actionsHidden").style.display = "flex";
-    $("#actionsShown").style.display  = "none";
-  }
-  $("#positionLabel").textContent = `Card ${state.idx + 1} of ${state.deck.length}`;
-  const pct = state.deck.length ? ((state.idx) / state.deck.length) * 100 : 0;
-  $("#progressBar").style.width = pct + "%";
-}
-function renderQuiz() {
-  const q = state.quiz.list[state.quiz.idx];
-  if (!q) {
-    $("#quizQ").textContent = "Quiz complete! 🎉";
-    $("#quizOptions").innerHTML = "";
-    $("#quizExplain").classList.remove("hidden");
-    $("#quizExplain").textContent =
-      `Final score: ${state.quiz.correct} correct, ${state.quiz.wrong} wrong ` +
-      `(${state.quiz.list.length} total).`;
-    $("#quizCat").textContent = "Results";
-    $("#quizIdx").textContent = state.quiz.list.length;
-    $("#quizCorrect").textContent = state.quiz.correct;
-    $("#quizWrong").textContent = state.quiz.wrong;
-    return;
-  }
-  $("#quizCat").textContent = q.card.cat;
-  $("#quizQ").textContent = q.card.q;
-  $("#quizIdx").textContent = state.quiz.idx + 1;
-  $("#quizCorrect").textContent = state.quiz.correct;
-  $("#quizWrong").textContent = state.quiz.wrong;
-  $("#quizExplain").classList.add("hidden");
-  $("#quizExplain").textContent = q.card.a;
-
-  const opts = $("#quizOptions");
-  opts.innerHTML = "";
-  q.choices.forEach((choice, i) => {
-    const b = document.createElement("button");
-    b.className = "quiz-option";
-    b.textContent = String.fromCharCode(65 + i) + ". " + choice;
-    b.onclick = () => answerQuiz(i);
-    opts.appendChild(b);
-  });
-  state.quiz.answered = false;
-}
-function answerQuiz(i) {
-  if (state.quiz.answered) return;
-  state.quiz.answered = true;
-  const q = state.quiz.list[state.quiz.idx];
-  const buttons = document.querySelectorAll(".quiz-option");
-  buttons.forEach((b, idx) => {
-    b.disabled = true;
-    if (idx === q.correct) b.classList.add("correct");
-    else if (idx === i) b.classList.add("wrong");
-  });
-  if (i === q.correct) state.quiz.correct++;
-  else state.quiz.wrong++;
-  $("#quizCorrect").textContent = state.quiz.correct;
-  $("#quizWrong").textContent = state.quiz.wrong;
-  $("#statScore").textContent = state.quiz.correct;
-  $("#statTotal").textContent = state.quiz.correct + state.quiz.wrong;
-  $("#quizExplain").classList.remove("hidden");
-}
-function buildQuiz() {
-  const pool = filtered();
-  const list = pool.slice();
-  // shuffle
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  // For each, build 3 distractors – prefer same category, else any
-  const items = list.slice(0, Math.min(list.length, 30)).map(card => {
-    const sameCat = pool.filter(c => c.cat === card.cat && c.q !== card.q);
-    const other   = pool.filter(c => c.q !== card.q);
-    const pickPool = sameCat.length >= 3 ? sameCat : other;
-    const distractors = [];
-    const used = new Set();
-    while (distractors.length < 3 && pickPool.length) {
-      const idx = Math.floor(Math.random() * pickPool.length);
-      const cand = pickPool[idx];
-      if (!used.has(cand.q)) {
-        used.add(cand.q);
-        // take a short version of the answer (first sentence)
-        const sentence = cand.a.split(/(?<=[.!?])\s/)[0];
-        distractors.push(sentence);
-      }
-      pickPool.splice(idx,1);
-    }
-    const correctText = card.a.split(/(?<=[.!?])\s/)[0];
-    const choices = [...distractors, correctText];
-    // shuffle
-    for (let i = choices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i+1));
-      [choices[i], choices[j]] = [choices[j], choices[i]];
-    }
-    const correct = choices.indexOf(correctText);
-    return { card, choices, correct };
-  });
-  state.quiz.list = items;
-  state.quiz.idx = 0;
-  state.quiz.correct = 0;
-  state.quiz.wrong = 0;
-  state.quiz.answered = false;
-}
-
-/* =========================================================================
-   WIRING
-   ------------------------------------------------------------------------- */
-function setMode(mode) {
-  state.mode = mode;
-  document.querySelectorAll(".mode-tabs button").forEach(b => {
-    b.classList.toggle("active", b.dataset.mode === mode);
-  });
-  $("#studyView").style.display = mode === "study" ? "block" : "none";
-  $("#quizView").style.display  = mode === "quiz"  ? "block" : "none";
-  $("#quizStatWrap").style.display = mode === "quiz" ? "block" : "none";
-  if (mode === "quiz") { buildQuiz(); renderQuiz(); }
-  else { buildDeck(); renderStudy(); }
-  renderStats();
-}
-function nextCard() {
-  state.idx = (state.idx + 1) % Math.max(1, state.deck.length);
-  state.showAnswer = false;
-  renderStudy();
-  renderStats();
-}
-function prevCard() {
-  state.idx = (state.idx - 1 + state.deck.length) % Math.max(1, state.deck.length);
-  state.showAnswer = false;
-  renderStudy();
-}
-function show() { state.showAnswer = true; renderStudy(); }
-function rateCurrent(r) {
-  const c = state.deck[state.idx];
-  if (!c) return;
-  rate(c, r);
-  nextCard();
-}
-
-function init() {
-  loadMeta();
-  buildCategories();
-  buildDeck();
-  renderStudy();
-  renderStats();
-
-  document.querySelectorAll(".mode-tabs button").forEach(b => {
-    b.onclick = () => setMode(b.dataset.mode);
-  });
-  $("#search").addEventListener("input", e => {
-    state.search = e.target.value;
-    if (state.mode === "study") { buildDeck(); renderStudy(); }
-    else { buildQuiz(); renderQuiz(); }
-    renderStats();
-  });
-  $("#category").addEventListener("change", e => {
-    state.category = e.target.value;
-    if (state.mode === "study") { buildDeck(); renderStudy(); }
-    else { buildQuiz(); renderQuiz(); }
-    renderStats();
-  });
-  $("#shuffleBtn").onclick = () => {
-    if (state.mode === "study") { shuffleDeck(); renderStudy(); }
-    else { buildQuiz(); renderQuiz(); }
-  };
-  $("#showAnswer").onclick = show;
-  document.querySelectorAll("[data-rate]").forEach(b => {
-    b.onclick = () => rateCurrent(b.dataset.rate);
-  });
-  $("#nextBtn").onclick = nextCard;
-  $("#prevBtn").onclick = prevCard;
-  $("#quizNext").onclick = () => {
-    if (!state.quiz.answered && state.quiz.idx < state.quiz.list.length) return;
-    state.quiz.idx++;
-    renderQuiz();
-  };
-  $("#quizRestart").onclick = () => { buildQuiz(); renderQuiz(); };
-  $("#resetBtn").onclick = () => {
-    if (confirm("Reset all progress and streaks? This cannot be undone.")) {
-      localStorage.removeItem(LS_KEY);
-      state.studyMap = {};
-      state.streakCount = 0;
-      state.streakDate = null;
-      buildDeck();
-      renderStudy();
-      renderStats();
-    }
-  };
-  // keyboard
-  document.addEventListener("keydown", e => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-    if (state.mode === "study") {
-      if (e.code === "Space")    { e.preventDefault(); if (!state.showAnswer) show(); }
-      else if (e.key === "1")    rateCurrent("again");
-      else if (e.key === "2")    rateCurrent("hard");
-      else if (e.key === "3")    rateCurrent("good");
-      else if (e.key === "4")    rateCurrent("easy");
-      else if (e.key === "ArrowRight") nextCard();
-      else if (e.key === "ArrowLeft")  prevCard();
-      else if (e.key.toLowerCase() === "s") { shuffleDeck(); renderStudy(); }
-    } else {
-      if (e.key === "Enter") $("#quizNext").click();
-    }
-  });
-}
-init();
-</script>
+  <!-- Interactive spotlight effect script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cards = document.querySelectorAll('.project-card');
+      
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+        });
+      });
+    });
+  </script>
 </body>
 </html>

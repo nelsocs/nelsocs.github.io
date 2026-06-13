@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculate the exact time and temperature to sous vide a steak. Standalone client-side calculator based on food science (Baldwin tables) with fresh/frozen, cut, thickness, and pasteurization inputs.">
+  <title>How Long to Sous Vide a Steak? (Time & Temp Calculator)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ============================================================
+       DESIGN SYSTEM & CSS VARIABLES
+       ============================================================ */
+    :root {
+      /* Light theme variables */
+      --bg-color: #f9f7f4;
+      --container-bg: #ffffff;
+      --text: #1d1815;
+      --text-sec: #514a44;
+      --text-muted: #8c8278;
+      
+      --card: #f4f1ec;
+      --border: #e6dfd5;
+      --border-md: #d6cebf;
+      
+      --red: #c0392b;
+      --red-dk: #962d22;
+      --red-lt: #fdf1ef;
+      --red-mid: #f0ccc7;
+      
+      --orange: #d4691e;
+      --orange-lt: #fdf4ec;
+      --green: #27ae60;
+      --green-lt: #ebf7ee;
+      --green-dk: #1e8449;
+      
+      --yellow-lt: #fffbeb;
+      --yellow-bdr: #f3d993;
+      --yellow-text: #856404;
+      
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.08);
+      
+      --r: 8px;
+      --r-lg: 12px;
+      --font: 'Quicksand', system-ui, -apple-system, sans-serif;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      /* Dark theme variables */
+      --bg-color: #12100f;
+      --container-bg: #1c1816;
+      --text: #f5f2ee;
+      --text-sec: #b8b0a5;
+      --text-muted: #8a8177;
+      
+      --card: #282421;
+      --border: #3d3733;
+      --border-md: #524b45;
+      
+      --red: #e74c3c;
+      --red-dk: #c0392b;
+      --red-lt: #2d1614;
+      --red-mid: #5a2722;
+      
+      --orange: #e67e22;
+      --orange-lt: #2d1e13;
+      --green: #2ecc71;
+      --green-lt: #142d1e;
+      --green-dk: #27ae60;
+      
+      --yellow-lt: #2d2613;
+      --yellow-bdr: #52431c;
+      --yellow-text: #f1c40f;
+      
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Reset scoped */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      transition: background-color var(--transition), color var(--transition);
+      padding: 0 0 50px 0;
+    }
+
+    /* Header Navbar */
+    .sv-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sv-logo {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .sv-logo span {
+      color: var(--red);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-md);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--red);
+      background: var(--red-lt);
+      color: var(--red-dk);
+    }
+
+    /* Main Container */
+    .sv {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 16px 56px;
+    }
+
+    /* Hero Section */
+    .sv-hero {
+      padding: 44px 0 36px;
+      text-align: center;
+    }
+
+    .sv-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 14px;
+    }
+
+    .sv-eyebrow::before,
+    .sv-eyebrow::after {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--red-mid);
+    }
+
+    .sv-hero h1 {
+      font-size: clamp(24px, 4.5vw, 40px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -.01em;
+    }
+
+    .sv-hero h1 span {
+      color: var(--red);
+    }
+
+    .sv-hero p {
+      font-size: 15px;
+      color: var(--text-sec);
+      max-width: 520px;
+      margin: 0 auto;
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .sv-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px 24px 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+      transition: background-color var(--transition), border-color var(--transition);
+    }
+
+    @media (max-width: 520px) {
+      .sv-card {
+        padding: 18px 16px 22px;
+      }
+    }
+
+    /* Section Headers */
+    .sv-sec {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .sv-sec-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sv-sec-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .sv-sec::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Grid Layouts */
+    .sv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 520px) {
+      .sv-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sv-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Fields & Inputs */
+    .sv-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .sv-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sec);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .sv-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .sv-select {
+      background: var(--container-bg);
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 11px 38px 11px 13px;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
+    }
+
+    .sv-select option {
+      background: var(--container-bg);
+      color: var(--text);
+    }
+
+    .sv-select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+    }
+
+    .sv-input {
+      background: var(--container-bg);
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 11px 13px;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
+    }
+
+    .sv-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sv-input:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+    }
+
+    /* Dual format wrapper (Inches / CM) */
+    .sv-dual-wrap {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .sv-dual-wrap .sv-input {
+      border-radius: var(--r) 0 0 var(--r);
+      border-right: none;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sv-dual-wrap .sv-input:focus {
+      border-right: none;
+      box-shadow: -3px 0 0 0 rgba(192, 57, 43, 0.12), 0 3px 0 0 rgba(192, 57, 43, 0.12), 0 -3px 0 0 rgba(192, 57, 43, 0.12);
+    }
+
+    .sv-conv-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      background: var(--red-lt);
+      border: 1.5px solid var(--border-md);
+      border-left: none;
+      border-radius: 0 var(--r) var(--r) 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red-dk);
+      white-space: nowrap;
+      min-width: 80px;
+      letter-spacing: .01em;
+      transition: background var(--transition), border-color var(--transition);
+      user-select: none;
+    }
+
+    .sv-dual-wrap:focus-within .sv-conv-badge {
+      border-color: var(--red);
+      background: var(--red-mid);
+    }
+
+    /* Thickness layout */
+    .sv-thick-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 520px) {
+      .sv-thick-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sv-thick-ref-head {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .sv-thick-tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .sv-thick-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 8px;
+      background: var(--container-bg);
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--r);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      transition: all .18s;
+      gap: 2px;
+    }
+
+    .sv-thick-tile span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sec);
+    }
+
+    .sv-thick-tile small {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sv-thick-tile:hover {
+      border-color: var(--red-mid);
+      background: var(--red-lt);
+      color: var(--red-dk);
+    }
+
+    .sv-thick-tile.active {
+      border-color: var(--red);
+      background: var(--red-lt);
+      color: var(--red);
+      box-shadow: 0 0 0 1px var(--red-mid);
+    }
+
+    .sv-thick-tile.active span {
+      color: var(--red-dk);
+    }
+
+    /* Toggle Switches (Starting state / Food Safety) */
+    .sv-toggle {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sv-toggle input[type=radio] {
+      display: none;
+    }
+
+    .sv-toggle label {
+      flex: 1;
+      min-width: 80px;
+      text-align: center;
+      padding: 10px;
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--r);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sec);
+      background: var(--container-bg);
+      transition: all .18s;
+      user-select: none;
+      line-height: 1.3;
+    }
+
+    .sv-toggle label .sub {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sv-toggle input[type=radio]:checked + label {
+      border-color: var(--red);
+      background: var(--red-lt);
+      color: var(--red);
+      box-shadow: 0 0 0 1px var(--red-mid);
+    }
+
+    .sv-toggle label:hover {
+      background: var(--red-lt);
+      color: var(--text);
+    }
+
+    /* Temperature presets */
+    .sv-chips-head {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .sv-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .sv-chip {
+      padding: 7px 12px;
+      background: var(--container-bg);
+      border: 1.5px solid var(--border-md);
+      border-radius: 100px;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sec);
+      white-space: nowrap;
+      transition: all .18s;
+    }
+
+    .sv-chip:hover {
+      border-color: var(--red-mid);
+      color: var(--red);
+      background: var(--red-lt);
+    }
+
+    .sv-chip.active {
+      border-color: var(--red);
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(192, 57, 43, 0.25);
+    }
+
+    .sv-temp-custom-head {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .sv-temp-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 440px) {
+      .sv-temp-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sv-temp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sv-temp-wrap {
+      position: relative !important;
+    }
+
+    .sv-temp-unit {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .sv .sv-temp-input.sv-input {
+      font-size: 20px !important;
+      font-weight: 700;
+      padding: 12px 12px 12px 36px !important;
+      color: var(--red);
+      letter-spacing: .02em;
+    }
+
+    .sv .sv-temp-input.sv-input::placeholder {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sv-temp-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Live doneness pill */
+    .sv-live {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--container-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      margin-top: 14px;
+      transition: border-color var(--transition);
+    }
+
+    .sv-live.on {
+      display: flex;
+    }
+
+    .sv-live-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid var(--border-md);
+      transition: background var(--transition);
+    }
+
+    .sv-live-name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .sv-live-desc {
+      font-size: 12px;
+      color: var(--text-sec);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    /* Warnings, Notes, Snapping Info */
+    .sv-warn {
+      display: none;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: var(--r);
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .sv-warn.on {
+      display: flex;
+    }
+
+    .sv-warn.danger {
+      background: var(--red-lt);
+      border: 1.5px solid var(--red-mid);
+      color: var(--red);
+    }
+
+    .sv-warn-ico {
+      font-size: 17px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .sv-warn a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .sv-note {
+      background: var(--yellow-lt);
+      border: 1.5px solid var(--yellow-bdr);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--yellow-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.55;
+    }
+
+    .sv-note-ico {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .sv-snap-notice {
+      display: none;
+      align-items: flex-start;
+      gap: 7px;
+      margin-top: 8px;
+      padding: 9px 12px;
+      background: var(--yellow-lt);
+      border: 1.5px solid var(--yellow-bdr);
+      border-radius: var(--r);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--yellow-text);
+      line-height: 1.5;
+      animation: sv-fadein .2s ease;
+    }
+
+    .sv-snap-notice.on {
+      display: flex;
+    }
+
+    .sv-snap-ico {
+      flex-shrink: 0;
+      font-style: normal;
+      font-size: 13px;
+      margin-top: 1px;
+    }
+
+    .sv-err {
+      display: none;
+      padding: 10px 14px;
+      background: var(--red-lt);
+      border: 1.5px solid var(--red-mid);
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--red-dk);
+      margin-top: 12px;
+    }
+
+    .sv-err.on {
+      display: block;
+    }
+
+    /* Calculate Button */
+    .sv-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 16px 24px;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      border: none;
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: background .2s, box-shadow .2s, transform .12s;
+      box-shadow: 0 3px 12px rgba(192, 57, 43, 0.3);
+    }
+
+    .sv-btn:hover {
+      background: var(--red-dk);
+      box-shadow: 0 5px 18px rgba(192, 57, 43, 0.4);
+    }
+
+    .sv-btn:active {
+      transform: scale(.99);
+    }
+
+    /* Results layout */
+    #sv-results {
+      display: none;
+      animation: sv-fadein .35s ease;
+    }
+
+    #sv-results.on {
+      display: block;
+    }
+
+    @keyframes sv-fadein {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Result Hero Box */
+    .sv-res-hero {
+      background: #1c1816;
+      border-radius: var(--r-lg);
+      padding: 28px 28px 24px;
+      color: #fff;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sv-res-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .05);
+      pointer-events: none;
+    }
+
+    .sv-res-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -20px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .03);
+      pointer-events: none;
+    }
+
+    .sv-res-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      opacity: .75;
+      margin-bottom: 16px;
+    }
+
+    .sv-res-doneness {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .sv-res-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 3px solid rgba(255, 255, 255, .35);
+      transition: background-color var(--transition);
+    }
+
+    .sv-res-done-name {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .sv-res-done-temp {
+      font-size: 14px;
+      opacity: .8;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .sv-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (max-width: 480px) {
+      .sv-metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .sv-metric {
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: var(--r);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .sv-metric-sub {
+      font-size: 11px;
+      opacity: .6;
+      font-weight: 600;
+      margin-bottom: 4px;
+      letter-spacing: .04em;
+    }
+
+    .sv-metric-val {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.01em;
+      color: #fff;
+    }
+
+    .sv-metric-lbl {
+      font-size: 11px;
+      opacity: .6;
+      font-weight: 600;
+      margin-top: 4px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .sv-past-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, .1);
+      border: 1.5px solid rgba(255, 255, 255, .2);
+      color: rgba(255, 255, 255, .9);
+      position: relative;
+      z-index: 2;
+    }
+
+    .sv-past-badge.green-badge {
+      background: rgba(30, 140, 78, .3);
+      border-color: rgba(30, 200, 100, .4);
+      color: #6ef5a8;
+    }
+
+    /* Detail Grid Cards */
+    .sv-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 520px) {
+      .sv-details {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sv-dcard {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px 16px;
+      box-shadow: var(--shadow-sm);
+      transition: background-color var(--transition), border-color var(--transition);
+    }
+
+    .sv-dcard h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sv-dcard p {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-sec);
+      line-height: 1.65;
+    }
+
+    .sv-dcard ul {
+      padding-left: 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-sec);
+      line-height: 1.9;
+    }
+
+    .sv-dcard ul li::marker {
+      color: var(--red);
+    }
+
+    /* Explainer Accordion */
+    .sv-explainer {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: background-color var(--transition), border-color var(--transition);
+    }
+
+    .sv-explainer-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .sv-explainer-toggle-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+
+    .sv-explainer-toggle-hint {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sec);
+      margin-right: auto;
+      margin-left: 10px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .sv-explainer-arrow {
+      font-size: 11px;
+      color: var(--text-sec);
+      transition: transform 0.2s;
+    }
+
+    .sv-explainer.open .sv-explainer-arrow {
+      transform: rotate(180deg);
+    }
+
+    .sv-explainer-body {
+      display: none;
+      padding: 0 18px 16px;
+    }
+
+    .sv-explainer.open .sv-explainer-body {
+      display: block;
+    }
+
+    .sv-explainer-body p {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-sec);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .sv-explainer-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .sv-explainer-body strong {
+      color: var(--text);
+    }
+
+    /* Reference Footer */
+    .sv-footer {
+      margin-top: 32px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .sv-footer a {
+      color: var(--red);
+      text-decoration: none;
+    }
+
+    .sv-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Timing Bar Chart */
+    .sv-time-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .sv-time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--container-bg);
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      transition: background-color var(--transition);
+    }
+
+    .sv-time-row-label {
+      color: var(--text-sec);
+    }
+
+    .sv-time-row-val {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .sv-time-row.highlight {
+      background: #1c1816;
+      border: 1px solid #3d3733;
+    }
+
+    .sv-time-row.highlight .sv-time-row-label {
+      color: #a69f95;
+    }
+
+    .sv-time-row.highlight .sv-time-row-val {
+      color: #fff;
+    }
+
+    .sv-timechart {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 4px 0 8px;
+    }
+
+    .sv-timechart-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 52px;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 420px) {
+      .sv-timechart-row {
+        grid-template-columns: 100px 1fr 45px;
+      }
+    }
+
+    .sv-timechart-label {
+      color: var(--text-sec);
+      font-weight: 600;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .sv-timechart-track {
+      background: var(--border);
+      border-radius: 4px;
+      height: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: background-color var(--transition);
+    }
+
+    .sv-timechart-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      min-width: 4px;
+    }
+
+    .sv-timechart-val {
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .sv-timechart-winner {
+      background: #1c1816;
+      border-radius: var(--r);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .sv-timechart-winner-label {
+      color: #a69f95;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sv-timechart-winner-val {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .sv-timechart-note {
+      font-size: 11px;
+      color: var(--text-sec);
+      line-height: 1.5;
+      padding: 6px 2px 0;
+    }
+
+    .sv-timechart-note.warn {
+      color: #e74c3c;
+    }
+
+    .sv-timechart-note.ok {
+      color: #2ecc71;
+    }
+
+    /* Accordion Hover Fix */
+    .sv .sv-explainer-toggle:hover {
+      background: none !important;
+      background-color: transparent !important;
+      color: inherit !important;
+      box-shadow: none !important;
+    }
+
+    .sv .sv-explainer-toggle:hover .sv-explainer-toggle-label {
+      color: var(--red) !important;
+    }
+
+    .sv .sv-explainer-toggle:hover .sv-explainer-toggle-hint,
+    .sv .sv-explainer-toggle:hover .sv-explainer-arrow {
+      color: inherit !important;
+    }
+
+    /* Content Explainer Sections */
+    .sv-content {
+      margin-top: 48px;
+      padding-top: 40px;
+      border-top: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .sv-content-section h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.3;
+    }
+
+    .sv-content-section p {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-sec);
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    .sv-content-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .sv-content-section a {
+      color: var(--red);
+      text-decoration: none;
+    }
+
+    .sv-content-section a:hover {
+      text-decoration: underline;
+    }
+
+    .sv-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .sv-step {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .sv-step-num {
+      width: 36px;
+      height: 36px;
+      background: var(--red);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .sv-step-body strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .sv-step-body span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-sec);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav with Theme switcher -->
+  <nav class="sv-navbar">
+    <a href="#" class="sv-logo">🥩 <span>Sous Vide</span> Steak</a>
+    <button type="button" class="theme-toggle-btn" id="theme-toggle">
+      <span id="theme-toggle-icon">🌙</span> <span id="theme-toggle-text">Dark Mode</span>
+    </button>
+  </nav>
+
+  <main class="sv" id="sous-vide-calculator">
+
+    <!-- HERO Header -->
+    <header class="sv-hero">
+      <div class="sv-eyebrow">Interactive Kitchen Tool</div>
+      <h1>How Long to <span>Sous Vide</span> a Steak?</h1>
+      <p>Calculates precise cook times based on food physics and Dr. Baldwin's tables. Adjusts automatically for starting state, thickness, target doneness, and food safety.</p>
+    </header>
+
+    <form id="sv-form" novalidate>
+
+      <!-- ── 01 YOUR STEAK ── -->
+      <div class="sv-card">
+        <div class="sv-sec">
+          <div class="sv-sec-num">1</div>
+          <div class="sv-sec-title">Your Steak</div>
+        </div>
+        <div class="sv-grid">
+          <div class="sv-field">
+            <label class="sv-label" for="sv-cut">Steak Cut</label>
+            <select class="sv-select" id="sv-cut">
+              <option value="">— Select a cut —</option>
+              <optgroup label="✦ Naturally Tender Cuts (Shorter Cooks)">
+                <option value="ribeye|tender" selected>Ribeye</option>
+                <option value="strip|tender">Strip Steak (NY Strip)</option>
+                <option value="tenderloin|tender">Tenderloin / Filet Mignon</option>
+                <option value="tbone|tender">T-Bone / Porterhouse</option>
+                <option value="denver|tender">Denver Steak</option>
+                <option value="picanha|tender">Picanha</option>
+                <option value="tomahawk|tender">Tomahawk / Cowboy Steak</option>
+                <option value="sirloin|tender">Top Sirloin</option>
+              </optgroup>
+              <optgroup label="✦ Tougher Cuts (benefit from longer tenderization)">
+                <option value="flank|tough">Flank Steak</option>
+                <option value="skirt|tough">Skirt Steak</option>
+                <option value="hanger|tough">Hanger Steak</option>
+                <option value="flat-iron|tough">Flat Iron Steak</option>
+                <option value="chuck|tough">Chuck Steak / Shoulder</option>
+                <option value="eye-round|tough">Eye of Round Steak</option>
+                <option value="bottom-round|tough">Bottom Round</option>
+                <option value="round|tough">Top Round Steak</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="sv-field">
+            <label class="sv-label">Starting State</label>
+            <div class="sv-toggle">
+              <input type="radio" id="st-fresh" name="state" value="fresh" checked>
+              <label for="st-fresh">🌡️ Fridge<span class="sub">Fresh (41°F)</span></label>
+              <input type="radio" id="st-frozen" name="state" value="frozen">
+              <label for="st-frozen">❄️ Frozen<span class="sub">Freezer (0°F)</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 02 THICKNESS ── -->
+      <div class="sv-card">
+        <div class="sv-sec">
+          <div class="sv-sec-num">2</div>
+          <div class="sv-sec-title">Steak Thickness</div>
+        </div>
+        <div class="sv-thick-layout">
+          <div class="sv-thick-input-col">
+            <div class="sv-field">
+              <label class="sv-label" for="thick-in">Thickness in inches</label>
+              <div class="sv-dual-wrap">
+                <input class="sv-input" type="number" id="thick-in" placeholder="e.g. 1.5" step="0.25" min="0.25" max="2.50" inputmode="decimal" value="1.5">
+                <span class="sv-conv-badge" id="thick-in-conv">3.8 cm</span>
+              </div>
+              <p class="sv-hint">Conversion to cm updates automatically</p>
+            </div>
+            
+            <div class="sv-snap-notice" id="sv-snap-notice">
+              <span class="sv-snap-ico">↳</span>
+              <span id="sv-snap-text">Rounding to nearest ¼ in...</span>
+            </div>
+            
+            <p class="sv-hint" style="margin-top:14px">
+              📏 Measure the <strong>thickest part</strong> of the steak.<br>
+              Calculator range: <strong>¼ in to 2½ in</strong> (0.6 – 6.5 cm).
+            </p>
+          </div>
+          
+          <div class="sv-thick-ref">
+            <p class="sv-thick-ref-head">Common thicknesses</p>
+            <div class="sv-thick-tiles">
+              <button type="button" class="sv-thick-tile" data-val="1.00">1 in<span>2.5 cm</span><small>Standard</small></button>
+              <button type="button" class="sv-thick-tile" data-val="1.25">1¼ in<span>3.2 cm</span><small>Common</small></button>
+              <button type="button" class="sv-thick-tile active" data-val="1.50">1½ in<span>3.8 cm</span><small>Ideal</small></button>
+              <button type="button" class="sv-thick-tile" data-val="2.00">2 in<span>5.0 cm</span><small>Thick</small></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 03 TARGET TEMPERATURE ── -->
+      <div class="sv-card">
+        <div class="sv-sec">
+          <div class="sv-sec-num">3</div>
+          <div class="sv-sec-title">Target Temperature</div>
+        </div>
+        
+        <p class="sv-chips-head">Quick-select doneness preset</p>
+        <div class="sv-chips">
+          <button type="button" class="sv-chip" data-f="118">Very Rare<br><small>118°F / 48°C</small></button>
+          <button type="button" class="sv-chip" data-f="120">Rare<br><small>120°F / 49°C</small></button>
+          <button type="button" class="sv-chip" data-f="125">Rare+<br><small>125°F / 52°C</small></button>
+          <button type="button" class="sv-chip active" data-f="131">Med-Rare<br><small>131°F / 55°C</small></button>
+          <button type="button" class="sv-chip" data-f="135">Med-Rare+<br><small>135°F / 57°C</small></button>
+          <button type="button" class="sv-chip" data-f="137">Med-Rare++<br><small>137°F / 58°C</small></button>
+          <button type="button" class="sv-chip" data-f="140">Medium<br><small>140°F / 60°C</small></button>
+          <button type="button" class="sv-chip" data-f="150">Med-Well<br><small>150°F / 66°C</small></button>
+          <button type="button" class="sv-chip" data-f="156">Well Done<br><small>156°F / 69°C</small></button>
+        </div>
+
+        <p class="sv-temp-custom-head">Or type exact temperature</p>
+        <div class="sv-temp-row">
+          <div class="sv-temp-field">
+            <div class="sv-temp-wrap">
+              <span class="sv-temp-unit">°F</span>
+              <input class="sv-input sv-temp-input" type="number" id="temp-f" placeholder="131" min="100" max="185" step="1" inputmode="numeric" value="131">
+            </div>
+            <p class="sv-temp-sub">Fahrenheit</p>
+          </div>
+          <div class="sv-temp-field">
+            <div class="sv-temp-wrap">
+              <span class="sv-temp-unit">°C</span>
+              <input class="sv-input sv-temp-input" type="number" id="temp-c" placeholder="55.0" min="38" max="85" step="0.1" inputmode="decimal" value="55.0">
+            </div>
+            <p class="sv-temp-sub">Celsius</p>
+          </div>
+        </div>
+
+        <div class="sv-live on" id="sv-live">
+          <div class="sv-live-dot" id="live-dot"></div>
+          <div>
+            <div class="sv-live-name" id="live-name">Medium Rare</div>
+            <div class="sv-live-desc" id="live-desc">Warm red center, juicy and tender</div>
+          </div>
+        </div>
+
+        <div class="sv-warn danger" id="sv-warn">
+          <span class="sv-warn-ico">⚠️</span>
+          <span>Below 130°F (54.4°C) is the danger zone. Pathogens survive and can multiply. Maximum recommended cooking time is 2 hours. Do not serve to children, pregnant women, the elderly, or immunocompromised individuals.</span>
+        </div>
+      </div>
+
+      <!-- ── 04 FOOD SAFETY ── -->
+      <div class="sv-card">
+        <div class="sv-sec">
+          <div class="sv-sec-num">4</div>
+          <div class="sv-sec-title">Food Safety</div>
+        </div>
+        <div class="sv-field">
+          <label class="sv-label">Pasteurization</label>
+          <div class="sv-toggle">
+            <input type="radio" id="past-yes" name="pasteurize" value="yes" checked>
+            <label for="past-yes">✔ Pasteurize<span class="sub">Safer — recommended</span></label>
+            <input type="radio" id="past-no" name="pasteurize" value="no">
+            <label for="past-no">✘ Heat through only<span class="sub">Faster — less safe</span></label>
+          </div>
+          <p class="sv-hint" style="margin-top:8px">Pasteurizing reduces harmful bacteria (Listeria, Salmonella, E. coli) to safe levels. At 131°F (55°C) and above, it adds a bit of extra hold time without affecting doneness. Highly recommended for vulnerable individuals.</p>
+        </div>
+      </div>
+
+      <div class="sv-err" id="sv-err"></div>
+      <button type="button" class="sv-btn" id="sv-calc">🥩 Calculate Cook Time</button>
+
+    </form>
+
+    <!-- ================================================================
+         RESULTS
+         ================================================================ -->
+    <section id="sv-results" aria-live="polite">
+      
+      <div class="sv-res-hero">
+        <div class="sv-res-eyebrow">Your Cooking Guide</div>
+        <div class="sv-res-doneness">
+          <div class="sv-res-swatch" id="r-swatch"></div>
+          <div>
+            <div class="sv-res-done-name" id="r-done-name">Medium Rare</div>
+            <div class="sv-res-done-temp" id="r-done-temp">131°F (55.0°C)</div>
+          </div>
+        </div>
+        
+        <div class="sv-metrics">
+          <div class="sv-metric">
+            <div class="sv-metric-sub">Water Bath</div>
+            <div class="sv-metric-val" id="r-temp">131°F</div>
+            <div class="sv-metric-lbl">Temperature</div>
+          </div>
+          <div class="sv-metric">
+            <div class="sv-metric-sub" id="r-min-sub">Minimum</div>
+            <div class="sv-metric-val" id="r-min">—</div>
+            <div class="sv-metric-lbl">Cook Time</div>
+          </div>
+          <div class="sv-metric" id="r-max-box">
+            <div class="sv-metric-sub" id="r-max-sub">Tenderize up to</div>
+            <div class="sv-metric-val" id="r-max">—</div>
+            <div class="sv-metric-lbl" id="r-max-lbl">Cook Time</div>
+          </div>
+        </div>
+        <div class="sv-past-badge" id="r-badge">✔ Pasteurized</div>
+      </div>
+
+      <div class="sv-details">
+        <div class="sv-dcard">
+          <h3>🌡️ Temperature</h3>
+          <p id="r-temp-detail"></p>
+        </div>
+        <div class="sv-dcard">
+          <h3>⏱ Timing Breakdown</h3>
+          <div class="sv-time-list" id="r-time-list"></div>
+        </div>
+        <div class="sv-dcard">
+          <h3>🛡 Food Safety Details</h3>
+          <p id="r-past-detail"></p>
+        </div>
+        <div class="sv-dcard">
+          <h3>🔥 After Sous Vide</h3>
+          <ul>
+            <li>Cool in an ice bath for <strong>5 min</strong> (prevents internal overcooking).</li>
+            <li>Pat <strong>completely dry</strong> with paper towels (moisture prevents a good sear).</li>
+            <li>Rest in the fridge for <strong>15 min</strong> on a wire rack.</li>
+            <li>Sear on a ripping-hot cast iron skillet for <strong>30-45 sec per side</strong>.</li>
+            <li>Serve <strong>immediately</strong> — no resting required!</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Explainer Accordion -->
+      <div class="sv-explainer" id="sv-explainer">
+        <button type="button" class="sv-explainer-toggle" id="sv-explainer-btn">
+          <span class="sv-explainer-toggle-label">💡 How these times work</span>
+          <span class="sv-explainer-toggle-hint">Why does a hotter bath not cook faster?</span>
+          <span class="sv-explainer-arrow">▼</span>
+        </button>
+        <div class="sv-explainer-body">
+          <p><strong>Bath temperature = your target doneness.</strong> In sous vide, you set the bath to the exact final temperature you want. The meat will equilibrate to this temperature and cannot exceed it. This eliminates carryover cooking and overcooking.</p>
+          <p><strong>Why do higher temperatures show the same minimum time?</strong> Because minimum cook time is bound by physics: the speed of heat diffusion through meat (thermal diffusivity). Above 140°F, pasteurization occurs in a few minutes, but heat still requires the same amount of time to travel to the core. Only thickness and starting state limit the minimum heating time.</p>
+          <p><strong>Can I speed it up?</strong> Yes, by setting a higher bath (e.g. 160°F) and removing the steak when a probe thermometer detects the center has reached 135°F. However, this is no longer hands-off and you risk overcooking the outer layers of the steak. The Baldwin method ensures a perfect edge-to-edge finish.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Dr. Baldwin Educational Sections -->
+    <div class="sv-content">
+      <div class="sv-content-section">
+        <h2>About This Sous Vide Steak Calculator</h2>
+        <p>This calculator removes the guesswork from cooking steak sous vide by providing precise times based on the thickness, starting state (fresh vs. frozen), steak cut, and your safety preferences. Rather than generic guidelines, it models heat transfer based on the thermal dynamics of meat, combined with pasteurization hold times.</p>
+        <p>Calculations are derived primarily from <a href="https://douglasbaldwin.com/sous-vide.html" target="_blank" rel="noreferrer noopener">Dr. Douglas Baldwin's Practical Guide to Sous Vide Cooking</a>, the gold standard reference in food science. Pasteurization hold times above 140°F (60°C) are computed using Baldwin's z-value logarithmic extrapolation (z=7°C for Listeria in beef).</p>
+      </div>
+
+      <div class="sv-content-section">
+        <h2>How to Use the Sous Vide Calculator</h2>
+        <div class="sv-steps">
+          <div class="sv-step">
+            <div class="sv-step-num">1</div>
+            <div class="sv-step-body">
+              <strong>Select your cut</strong>
+              <span>Choose your steak from the dropdown. Naturally tender cuts require only heating through, while tougher cuts (like flank, skirt, round, chuck) benefit from extended cook times to break down tough collagen.</span>
+            </div>
+          </div>
+          <div class="sv-step">
+            <div class="sv-step-num">2</div>
+            <div class="sv-step-body">
+              <strong>Enter the thickness</strong>
+              <span>Measure the thickest part of the steak. Use the input field or click one of the common thickness tiles. The calculator rounds and calculates for the nearest ¼ in.</span>
+            </div>
+          </div>
+          <div class="sv-step">
+            <div class="sv-step-num">3</div>
+            <div class="sv-step-body">
+              <strong>Select target doneness & temperature</strong>
+              <span>Click a preset doneness chip or input a custom temperature. The temperature inputs for Fahrenheit and Celsius stay automatically synchronized.</span>
+            </div>
+          </div>
+          <div class="sv-step">
+            <div class="sv-step-num">4</div>
+            <div class="sv-step-body">
+              <strong>Adjust safety & starting state</strong>
+              <span>Specify if the steak is starting fresh (refrigerated) or frozen. Select whether you want the steak pasteurized to kill potential pathogens.</span>
+            </div>
+          </div>
+          <div class="sv-step">
+            <div class="sv-step-num">5</div>
+            <div class="sv-step-body">
+              <strong>Calculate and view timing details</strong>
+              <span>Click the calculate button to see the recommended water bath temperature, minimum cook time, and a graphical timing chart showing heat-through and pasteurization times.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Disclaimer -->
+    <footer class="sv-footer">
+      <p>Cook times are based on peer-reviewed food safety research by Dr. Douglas Baldwin. This tool is for educational guidance only. Under-cooking meat carries inherent health risks. Always use a calibrated meat thermometer to verify internal temperatures. Consult USDA guidelines for detailed safety information.</p>
+    </footer>
+
+  </main>
+
+  <script>
+    (function() {
+      'use strict';
+
+      /* ============================================================
+         DONENESS BANDS
+         ============================================================ */
+      const BANDS = [
+        { key:'veryRare', minF:115, maxF:119, label:'Very Rare',   color:'#6B0000', desc:'Cool red center, very soft — almost raw texture' },
+        { key:'rare',     minF:120, maxF:129, label:'Rare',        color:'#8B0000', desc:'Bright red center, soft with slight resistance' },
+        { key:'medRare',  minF:130, maxF:139, label:'Medium Rare', color:'#C1440E', desc:'Warm red center, juicy and tender' },
+        { key:'medium',   minF:140, maxF:149, label:'Medium',      color:'#D2691E', desc:'Pink center, slightly firmer' },
+        { key:'medWell',  minF:150, maxF:155, label:'Medium Well', color:'#8B4513', desc:'Slightly pink, firmer throughout' },
+        { key:'well',     minF:156, maxF:185, label:'Well Done',   color:'#4A2200', desc:'No pink, fully cooked throughout' }
+      ];
+
+      function getBand(f) {
+        if(f < 120) return BANDS[0];
+        if(f < 130) return BANDS[1];
+        if(f < 140) return BANDS[2];
+        if(f < 150) return BANDS[3];
+        if(f < 156) return BANDS[4];
+        return BANDS[5];
+      }
+
+      /* ============================================================
+         PASTEURIZATION TABLES (fridge, slab) — Baldwin / AFME
+         [hours, minutes]
+         ============================================================ */
+      const PAST = {
+        55:{ 0.25:[1,50],0.50:[2,10],0.75:[2,30],1.00:[2,45],1.25:[3,10],1.50:[3,25],1.75:[4,0],2.00:[4,30],2.25:[5,10],2.50:[5,40] },
+        57:{ 0.25:[1, 0],0.50:[1,25],0.75:[1,45],1.00:[2, 0],1.25:[2, 5],1.50:[2,25],1.75:[3,0],2.00:[3,20],2.25:[4, 0],2.50:[4,35] },
+        60:{ 0.25:[0,35],0.50:[0,50],0.75:[1,15],1.00:[1,30],1.25:[1,40],1.50:[1,55],1.75:[2,15],2.00:[2,30],2.25:[3, 5],2.50:[3,35] },
+        63:{ 0.25:[0,19],0.50:[0,38],0.75:[0,59],1.00:[1,21],1.25:[1,40],1.50:[0,1],1.75:[0,1],2.00:[0,1],2.25:[0,1],2.50:[0,1] },
+        69:{ 0.25:[0,11],0.50:[0,31],0.75:[0,51],1.00:[1,16],1.25:[1,40],1.50:[0,1],1.75:[0,1],2.00:[0,1],2.25:[0,1],2.50:[0,1] }
+      };
+
+      /* HEAT-THROUGH TABLES (slab) */
+      const HEAT_F = { 0.25:[0,10],0.50:[0,30],0.75:[0,50],1.00:[1,15],1.25:[1,40],1.50:[2,20],1.75:[3,0],2.00:[3,35],2.25:[4,25],2.50:[5,10] };
+      const HEAT_Z = { 0.25:[0,15],0.50:[0,40],0.75:[1,15],1.00:[1,50],1.25:[2,35],1.50:[3,20],1.75:[4,30],2.00:[5,30],2.25:[6,35],2.50:[7,15] };
+
+      /* Tough cut tenderization ranges (hours) */
+      const TRNG = {
+        flank:          { min:8,  max:12 },
+        skirt:          { min:4,  max:12 },
+        hanger:         { min:2,  max:4  },
+        'flat-iron':    { min:4,  max:12 },
+        chuck:          { min:24, max:48 },
+        'eye-round':    { min:12, max:24 },
+        'bottom-round': { min:24, max:36 },
+        round:          { min:48, max:72 }
+      };
+
+      /* ============================================================
+         UTILITIES
+         ============================================================ */
+      function toMin(hm){ return hm[0]*60+hm[1] }
+      function fromMin(m){ return [Math.floor(m/60), m%60] }
+      function addMin(hm,x){ return fromMin(toMin(hm)+x) }
+      
+      function fmt(hm){
+        const h=hm[0], m=hm[1];
+        if(h===0) return m+'m';
+        if(m===0) return h+'h';
+        return h+'h '+m+'m';
+      }
+      
+      function fToC(f){ return Math.round((f-32)*5/9*10)/10 }
+      
+      function cToF(c){ return Math.round(c*9/5+32) }
+      
+      function snap(v){
+        const s = Math.round(v/0.25)*0.25;
+        return parseFloat(Math.max(0.25, Math.min(2.50, s)).toFixed(2));
+      }
+
+      function pastTime(tempC, thick){
+        const tc = tempC;
+        const anchors = [55, 57, 60, 63, 69];
+
+        /* Below lowest anchor — extrapolate using z-value from 55°C */
+        if(tc < 55){
+          const base = toMin(PAST[55][thick]||[3,0]);
+          const heatBase = toMin(HEAT_F[thick]||[1,15]);
+          const holdBase = Math.max(0, base - heatBase);
+          const factor = Math.pow(10, (55 - tc) / 7);
+          return fromMin(Math.round(heatBase + holdBase * factor));
+        }
+
+        /* Above highest anchor — extrapolate from 69°C */
+        if(tc > 69){
+          const base69 = toMin(PAST[69][thick]||[0,11]);
+          const heat69 = toMin(HEAT_F[thick]||[1,15]);
+          const hold69 = Math.max(0, base69 - heat69);
+          const factor2 = Math.pow(10, (69 - tc) / 7);
+          return fromMin(Math.round(heat69 + hold69 * factor2));
+        }
+
+        /* Find surrounding anchors and linearly interpolate */
+        for(let i=0; i<anchors.length-1; i++){
+          const lo = anchors[i], hi = anchors[i+1];
+          if(tc >= lo && tc <= hi){
+            const a = toMin(PAST[lo][thick]||[3,0]);
+            const b = toMin(PAST[hi][thick]||[1,30]);
+            return fromMin(Math.round(a + (tc-lo)/(hi-lo)*(b-a)));
+          }
+        }
+        return PAST[60][thick]||[1,30];
+      }
+
+      function fmtThick(inch){ return inch+'" ('+Math.round(inch*2.54*10)/10+' cm)' }
+      function fmtTemp(f){ return f+'°F ('+fToC(f).toFixed(1)+'°C)' }
+
+      /* ============================================================
+         DOM ELEMENTS
+         ============================================================ */
+      const cutEl       = document.getElementById('sv-cut');
+      const thickIn     = document.getElementById('thick-in');
+      const thickInConv = document.getElementById('thick-in-conv');
+      const tempFEl     = document.getElementById('temp-f');
+      const tempCEl     = document.getElementById('temp-c');
+      const liveEl      = document.getElementById('sv-live');
+      const liveDot     = document.getElementById('live-dot');
+      const liveName    = document.getElementById('live-name');
+      const liveDesc    = document.getElementById('live-desc');
+      const warnEl      = document.getElementById('sv-warn');
+      const errEl       = document.getElementById('sv-err');
+      const calcBtn     = document.getElementById('sv-calc');
+      const resultsEl   = document.getElementById('sv-results');
+      const chips       = document.querySelectorAll('.sv-chip');
+      const snapNoticeEl = document.getElementById('sv-snap-notice');
+      const snapTextEl   = document.getElementById('sv-snap-text');
+      
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon   = document.getElementById('theme-toggle-icon');
+      const themeText   = document.getElementById('theme-toggle-text');
+
+      /* ============================================================
+         LIGHT / DARK THEME TOGGLE
+         ============================================================ */
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+          document.documentElement.removeAttribute('data-theme');
+          themeIcon.textContent = '🌙';
+          themeText.textContent = 'Dark Mode';
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          themeIcon.textContent = '☀️';
+          themeText.textContent = 'Light Mode';
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Light Mode';
+      }
+
+      /* ============================================================
+         THICKNESS — Live CM Badge and Snapping
+         ============================================================ */
+      thickIn.addEventListener('input', function() {
+        const v = parseFloat(this.value);
+        if (!isNaN(v) && v > 0) {
+          const cm = (v * 2.54).toFixed(1);
+          thickInConv.textContent = cm + ' cm';
+          
+          let snapped = Math.round(v / 0.25) * 0.25;
+          snapped = Math.max(0.25, Math.min(2.50, parseFloat(snapped.toFixed(2))));
+          const snappedCm = (snapped * 2.54).toFixed(1);
+          
+          if (Math.abs(snapped - v) > 0.01) {
+            let msg = '';
+            if (v > 2.50) {
+              msg = 'Maximum supported thickness is 2½ in (6.5 cm) — calculating for that.';
+            } else if (v < 0.25) {
+              msg = 'Minimum supported thickness is ¼ in (0.6 cm) — calculating for that.';
+            } else {
+              const frac = snapped % 1;
+              const whole = Math.floor(snapped);
+              const fracStr = frac === 0 ? '' : (frac === 0.25 ? '¼' : frac === 0.5 ? '½' : '¾');
+              const displayIn = (whole > 0 ? whole : '') + fracStr + ' in';
+              msg = 'Rounding to nearest ¼ in — calculating for ' + displayIn + ' (' + snappedCm + ' cm).';
+            }
+            snapTextEl.textContent = msg;
+            snapNoticeEl.classList.add('on');
+          } else {
+            snapNoticeEl.classList.remove('on');
+          }
+          document.querySelectorAll('.sv-thick-tile').forEach((t) => t.classList.remove('active'));
+        } else {
+          thickInConv.textContent = '— cm';
+          snapNoticeEl.classList.remove('on');
+        }
+      });
+
+      /* Thickness tiles click-pick */
+      document.querySelectorAll('.sv-thick-tile').forEach((tile) => {
+        tile.addEventListener('click', function() {
+          const v = this.getAttribute('data-val');
+          thickIn.value = v;
+          thickInConv.textContent = (parseFloat(v)*2.54).toFixed(1)+' cm';
+          document.querySelectorAll('.sv-thick-tile').forEach((t) => t.classList.remove('active'));
+          this.classList.add('active');
+          snapNoticeEl.classList.remove('on');
+        });
+      });
+
+      /* ============================================================
+         TEMPERATURE — Live indicator & sync
+         ============================================================ */
+      function applyF(f) {
+        if(isNaN(f) || f < 100 || f > 185) {
+          liveEl.classList.remove('on');
+          return;
+        }
+        const band = getBand(f);
+        liveDot.style.backgroundColor = band.color;
+        liveName.textContent = band.label;
+        liveDesc.textContent = band.desc;
+        liveEl.classList.add('on');
+        warnEl.classList[f < 130 ? 'add' : 'remove']('on');
+      }
+
+      tempFEl.addEventListener('input', function() {
+        const f = parseFloat(this.value);
+        if(!isNaN(f)) {
+          tempCEl.value = fToC(f).toFixed(1);
+          applyF(f);
+          clearChips();
+        }
+      });
+
+      tempCEl.addEventListener('input', function() {
+        const c = parseFloat(this.value);
+        if(!isNaN(c)) {
+          const f = cToF(c);
+          tempFEl.value = f;
+          applyF(f);
+          clearChips();
+        }
+      });
+
+      /* Preset chips */
+      chips.forEach((chip) => {
+        chip.addEventListener('click', function() {
+          const f = parseInt(this.getAttribute('data-f'), 10);
+          tempFEl.value = f;
+          tempCEl.value = fToC(f).toFixed(1);
+          applyF(f);
+          chips.forEach((c) => c.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+
+      function clearChips() {
+        chips.forEach((c) => c.classList.remove('active'));
+      }
+
+      // Initialize Live bands
+      applyF(131);
+
+      /* ============================================================
+         CALCULATION LOGIC
+         ============================================================ */
+      calcBtn.addEventListener('click', function() {
+        errEl.classList.remove('on');
+
+        const cutRaw = cutEl.value;
+        const tIn = parseFloat(thickIn.value);
+        const fVal = parseFloat(tempFEl.value);
+        const frozen = document.querySelector('input[name=state]:checked').value === 'frozen';
+        const doPast = document.querySelector('input[name=pasteurize]:checked').value === 'yes';
+
+        /* validation */
+        if(!cutRaw || isNaN(tIn) || tIn <= 0) {
+          errEl.textContent = 'Please select a steak cut and enter the thickness before calculating.';
+          errEl.classList.add('on');
+          return;
+        }
+        if(isNaN(fVal) || fVal < 118 || fVal > 156) {
+          errEl.textContent = 'This calculator covers temperatures between 118–156°F (48–69°C). Below 118°F pasteurization takes dangerously long. Douglas Baldwin\'s tables for beef do not extend above 156°F.';
+          errEl.classList.add('on');
+          return;
+        }
+
+        const parts = cutRaw.split('|');
+        const cutName = parts[0];
+        const isTough = parts[1] === 'tough';
+        const snapped = snap(tIn);
+        const fRound = Math.round(fVal);
+        const cVal = fToC(fVal);
+        const band = getBand(fRound);
+
+        /* timing lookup */
+        const heatTbl = frozen ? HEAT_Z : HEAT_F;
+        const heatTime = heatTbl[snapped] || [1, 15];
+
+        /* Below 130°F validation: Baldwin safety check */
+        if(fRound < 130 && toMin(heatTime) > 240) {
+          errEl.innerHTML = 'At ' + fRound + '°F, a ' + snapped + '" steak needs ' + fmt(heatTime) + ' to heat through — which exceeds Baldwin\'s 4-hour safe window for below-130°F cooks. Use a thinner steak (max ~1.25" at this temperature) or raise your water bath to 131°F+.';
+          errEl.classList.add('on');
+          return;
+        }
+
+        /* Pasteurization logic */
+        let pTime = null, pastOK = false, pastInsideHeat = false;
+        if(fRound >= 130 && doPast) {
+          pTime = pastTime(cVal, snapped);
+          pastOK = true;
+          if(frozen) {
+            const fhMin = toMin(HEAT_F[snapped] || [1, 15]);
+            const fzMin = toMin(HEAT_Z[snapped] || [1, 50]);
+            pTime = addMin(pTime, fzMin - fhMin);
+          }
+          pastInsideHeat = toMin(pTime) <= toMin(heatTime);
+        }
+
+        let minTime = (doPast && pTime) ? pTime : heatTime;
+        if(toMin(minTime) < toMin(heatTime)) minTime = heatTime;
+
+        /* ---- RENDER OUTCOMES ---- */
+        document.getElementById('r-swatch').style.backgroundColor = band.color;
+        document.getElementById('r-done-name').textContent = band.label;
+        document.getElementById('r-done-temp').textContent = fmtTemp(fRound);
+        document.getElementById('r-temp').textContent = fRound + '°F';
+
+        /* Below 130°F: show max cook warning instead of minimum */
+        if(fRound < 130) {
+          document.getElementById('r-min-sub').textContent = 'Max time';
+          document.getElementById('r-min').textContent = '2h';
+        } else {
+          document.getElementById('r-min-sub').textContent = (doPast && pastOK) ? 'Pasteurized min' : 'Minimum';
+          document.getElementById('r-min').textContent = fmt(minTime);
+        }
+
+        /* Tenderization box */
+        const maxBox = document.getElementById('r-max-box');
+        if(isTough) {
+          const tRange = TRNG[cutName] || { min:4, max:24 };
+          maxBox.style.display = '';
+          document.getElementById('r-max-sub').textContent = 'Tenderization';
+          document.getElementById('r-max').textContent = tRange.min + '–' + tRange.max + 'h';
+          document.getElementById('r-max-lbl').textContent = 'Optimal Range';
+        } else {
+          maxBox.style.display = 'none';
+        }
+
+        /* Badges */
+        const badge = document.getElementById('r-badge');
+        if(fRound < 130) {
+          badge.className = 'sv-past-badge';
+          badge.textContent = '⚠️ Not pasteurized — below 130°F (54.4°C)';
+        } else if(doPast && pastOK) {
+          badge.className = 'sv-past-badge green-badge';
+          badge.textContent = '✔ Pasteurized — pathogens reduced to safe levels';
+        } else {
+          badge.className = 'sv-past-badge';
+          badge.textContent = '⚡ Heat-through only — consume promptly';
+        }
+
+        /* Detailed explanation cards */
+        document.getElementById('r-temp-detail').innerHTML = 
+          'Set your water bath to <strong>' + fmtTemp(fRound) + '</strong>.<br><br>' +
+          'Result: ' + band.desc + '.<br><br>' +
+          'The steak will not exceed this temperature during the sous vide phase — only texture changes with time, not doneness.';
+
+        /* Timing bar chart construction */
+        const heatMin = toMin(heatTime);
+        const pastMin = (doPast && pastOK && pTime) ? toMin(pTime) : null;
+        const scaleMax = Math.max(heatMin, pastMin || 0, 1);
+
+        function makeBar(minutes, color) {
+          const pct = Math.round(Math.min(100, (minutes / scaleMax) * 100));
+          return '<div class="sv-timechart-track"><div class="sv-timechart-bar" style="width:' + pct + '%;background-color:' + color + '"></div></div>';
+        }
+
+        let chartHtml = '';
+        chartHtml += '<div class="sv-time-row"><span class="sv-time-row-label">Starting state</span><span class="sv-time-row-val">' + (frozen ? '❄️ Frozen' : '🌡️ Fridge (41°F)') + '</span></div>';
+        chartHtml += '<div class="sv-time-row"><span class="sv-time-row-label">Thickness</span><span class="sv-time-row-val">' + fmtThick(snapped) + '</span></div>';
+        
+        chartHtml += '<div class="sv-timechart">';
+        
+        // Heat through row
+        chartHtml += '<div class="sv-timechart-row">'
+                  + '<div class="sv-timechart-label">Heat-through</div>'
+                  + makeBar(heatMin, 'var(--red)')
+                  + '<div class="sv-timechart-val">' + fmt(heatTime) + '</div>'
+                  + '</div>';
+
+        // Pasteurization row
+        if(fRound < 130) {
+          chartHtml += '<div class="sv-timechart-row">'
+                    + '<div class="sv-timechart-label">Pasteurization</div>'
+                    + '<div class="sv-timechart-track"><div style="width:100%;height:100%;display:flex;align-items:center;padding:0 8px;font-size:11px;color:#e74c3c;font-weight:600">Not possible below 130°F</div></div>'
+                    + '<div class="sv-timechart-val" style="color:#e74c3c">—</div>'
+                    + '</div>';
+        } else if(doPast && pastOK) {
+          const pastColor = pastInsideHeat ? 'var(--green)' : 'var(--orange)';
+          chartHtml += '<div class="sv-timechart-row">'
+                    + '<div class="sv-timechart-label">Pasteurization</div>'
+                    + makeBar(pastMin, pastColor)
+                    + '<div class="sv-timechart-val">' + fmt(pTime) + '</div>'
+                    + '</div>';
+        }
+        
+        chartHtml += '</div>'; // End sv-timechart
+
+        // Winner banner
+        if(fRound < 130) {
+          chartHtml += '<div class="sv-timechart-winner" style="background:#2a1614;border:1px solid #5a2722">'
+                    + '<span class="sv-timechart-winner-label">⚠️ Maximum cook time</span>'
+                    + '<span class="sv-timechart-winner-val" style="color:#e74c3c">2h</span>'
+                    + '</div>'
+                    + '<div class="sv-timechart-note warn">Pathogens survive at ' + fRound + '°F. Cook for no more than 2 hours. Serve to healthy adults only.</div>';
+        } else if(doPast && pastOK) {
+          const winnerLabel = pastInsideHeat 
+            ? '✅ Minimum time — limited by heat-through' 
+            : '✅ Minimum time — limited by pasteurization';
+          chartHtml += '<div class="sv-timechart-winner">'
+                    + '<span class="sv-timechart-winner-label">' + winnerLabel + '</span>'
+                    + '<span class="sv-timechart-winner-val">' + fmt(minTime) + '</span>'
+                    + '</div>';
+        } else {
+          chartHtml += '<div class="sv-timechart-winner" style="border:1px solid #3d3733">'
+                    + '<span class="sv-timechart-winner-label">▶ Minimum time (no pasteurization)</span>'
+                    + '<span class="sv-timechart-winner-val">' + fmt(minTime) + '</span>'
+                    + '</div>';
+        }
+
+        if(isTough) {
+          const r2 = TRNG[cutName] || { min:4, max:24 };
+          chartHtml += '<div class="sv-time-row highlight" style="margin-top:6px"><span class="sv-time-row-label">⏳ Tenderization range</span><span class="sv-time-row-val">' + r2.min + '–' + r2.max + ' h</span></div>';
+        }
+
+        document.getElementById('r-time-list').innerHTML = chartHtml;
+
+        /* Food Safety Card Details text */
+        let safetyText = '';
+        if(fRound < 130) {
+          safetyText = '<strong style="color:var(--red)">Below 130°F (54.4°C): pasteurization is not possible.</strong> Pathogens are not destroyed and may multiply. '
+                     + 'Culinary safety standards suggest a maximum cook time of 2 hours. Only serve to healthy adults who understand the risk.';
+        } else if(doPast && pastOK) {
+          const logNote = 'Pasteurization achieves a ≥6-log reduction of Listeria, ≥7-log of Salmonella, and ≥5-log of pathogenic E. coli, per USDA/FDA guidelines.';
+          if(pastInsideHeat) {
+            safetyText = 'At ' + fmtTemp(fRound) + ', pasteurization hold time (' + fmt(pTime) + ') is shorter than heat-through time (' + fmt(heatTime) + '). '
+                       + 'By the time the core reaches target temperature, the outer layers have already been pasteurized. '
+                       + 'Minimum cook time is determined strictly by physics (heat travel through thickness).<br><br>' + logNote;
+          } else {
+            safetyText = 'At ' + fmtTemp(fRound) + ', pasteurization hold time (' + fmt(pTime) + ') exceeds heat-through time (' + fmt(heatTime) + '). '
+                       + 'Additional holding time is required for pathoghen reduction. Pasteurization sets the minimum cook time.<br><br>' + logNote;
+          }
+        } else {
+          safetyText = 'Heat-through only. The steak is heated to the target temperature but not pasteurized. Serve immediately. Not recommended for immunocompromised individuals.';
+        }
+        document.getElementById('r-past-detail').innerHTML = safetyText;
+
+        /* Reveal results & scroll */
+        resultsEl.classList.add('on');
+        setTimeout(() => {
+          resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+
+      });
+
+      /* Explainer accordion toggle */
+      document.getElementById('sv-explainer-btn').addEventListener('click', function() {
+        document.getElementById('sv-explainer').classList.toggle('open');
+      });
+
+    })();
+  </script>
+</body>
+</html>
